@@ -10,6 +10,9 @@ const FaceMatch = () => {
     const [videoElem, setVideoElem] = useState()
     const [capturedImg, setCapturedImg] = useState("")
 
+    const ACCESS_KEY = process.env.ACCESS_KEY
+    const SECRET_ACCESS_KEY = process.env.SECRET_ACCESS_KEY
+
     const handleSetError = () => {
         setError("")
     }
@@ -42,15 +45,15 @@ const FaceMatch = () => {
 
     const handleNodefluxEnroll = async () => {
         // request for token
-        
+
         await fetch("https://cors-anywhere.herokuapp.com/https://backend.cloud.nodeflux.io/auth/signatures", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: {
-                "access_key": "TSJZ7GNB091Y1MAFH1CYW2DPF",
-                "secret_key": "fyM801LrkAaIuVEDtawR669jehxlgrs70NU43Z0yk6FPufnGv9AD9RM9-wUeVs-k"
+                "access_key": ACCESS_KEY,
+                "secret_key": SECRET_ACCESS_KEY
             }
         }).then(authorization => {
             // console.log(authorization.json())
