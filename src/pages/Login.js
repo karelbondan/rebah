@@ -3,6 +3,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../firebase'
 import { updateDoc, doc } from 'firebase/firestore'
 import { useNavigate } from 'react-router-dom'
+import defbg from '../components/items/bg3.jpg'
 
 const Login = () => {
     const [form, setForm] = useState({
@@ -41,15 +42,20 @@ const Login = () => {
 
     return (
         <div>
-            <div className='flex flex-1 w-screen h-screen justify-center items-center'>
-                <div>
-                    <div className='bg-gray-200 rounded-3xl px-16 py-2 shadow-xl text-gray-700 border-gray-300 border'>
-                        <form onSubmit={handleSubmit} autoComplete="off">
-                            <h3 className='text-2xl border-b border-black py-3 mt-8 mb-8 font-bold'>Login to your account</h3>
+            <div className='w-0 h-screen fixed top-0 left-0 z-0'>
+                <img className='opacity-30 min-h-max min-w-max ' src={defbg}></img>
+            </div>
+            <div className='flex items-center justify-center overflow-auto bg-gray-900'>
+                <div className='flex text-white h-screen w-screen justify-center items-center'>
+                    <div className='z-50 bg-gray-700 px-20 py-16 space-y-10 rounded-lg shadow-xl'>
+                        <h3 className='text-4xl font-bold text-center'>
+                            Sign in
+                        </h3>
+                        <form onSubmit={handleSubmit} className='space-y-2' autoComplete="off">
                             <div>
-                                <label htmlFor='email' className='px-2 font-bold'>Email</label>
+                                <label htmlFor='email' className='px-2'>Email</label>
                                 <input
-                                    className='rounded-md mb-5 mt-1 px-3 h-10 border-2 border-slate-400 w-full'
+                                    className='rounded-full mb-5 mt-1 px-4 h-10 border border-white border-opacity-60 opacity-70 focus:opacity-100 focus:border-opacity-90 bg-transparent outline-none w-full transition-all text-md'
                                     name="email"
                                     type="text"
                                     placeholder="E-mail"
@@ -58,11 +64,11 @@ const Login = () => {
                                 />
                             </div>
                             <div>
-                                <label className='px-2 font-bold'>Password</label>
+                                <label className='px-2'>Password</label>
                                 <input
-                                    className='rounded-md mb-5 mt-1 px-3 h-10 border-2 border-slate-400 w-full'
+                                    className='rounded-full mb-5 mt-1 px-4 h-10 border border-white border-opacity-60 opacity-70 focus:opacity-100 focus:border-opacity-90 bg-transparent outline-none w-full transition-all text-md'
                                     name="password"
-                                    type="text"
+                                    type="password"
                                     placeholder="**********"
                                     onChange={handleChange}
                                     required
@@ -70,8 +76,8 @@ const Login = () => {
                             </div>
                             {err ? <p className='text-center text-red-500'>{err}</p> : null}
                             <div className='flex justify-center'>
-                                <button className='px-5 py-2.5 border-2 border-gray-500 hover:bg-gray-500 hover:text-white transition-colors rounded-full mb-8 mt-8 disabled:opacity-50' disabled={loading}>
-                                    {loading ? 'Logging in ...' : 'Login'}
+                                <button className={`px-8 py-3 rounded-full hover:bg-gray-800 bg-gray-600 transition-all focus:outline-none disabled:opacity-70 ${loading ? "loading_dots" : ""}`} disabled={loading}>
+                                    {loading ? '••••••' : 'Login'}
                                 </button>
                             </div>
                         </form>
