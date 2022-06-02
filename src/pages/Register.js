@@ -45,7 +45,8 @@ const Register = () => {
                 username,
                 email,
                 createdAt: Timestamp.fromDate(new Date()),
-                isOnline: true
+                isOnline: true,
+                faceEnrollment: ""
             });
             setForm({ username: "", email: "", password: "", confirm_password: "", err: null, loading: false })
             console.log("success");
