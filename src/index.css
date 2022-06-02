@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  color-scheme: dark;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -41,4 +45,25 @@ code {
 
 .height-nodeflux {
   height: 10px;
+}
+
+.loading_dots {
+  text-align: center;
+  animation: animated_loading_dots 1s infinite;
+}
+
+@keyframes animated_loading_dots {
+  50% {letter-spacing: 10px;}
+}
+
+.navbar {
+  z-index: 100;
+}
+
+.other_stuffs {
+  z-index: 50;
+}
+
+.background {
+  z-index: 0;
 }
