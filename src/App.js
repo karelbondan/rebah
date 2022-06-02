@@ -6,11 +6,13 @@ import Register from './pages/Register';
 import Login from './pages/Login';
 import Test from './pages/Test';
 import Profile from './pages/Profile';
+import FaceMatch from './pages/FaceMatch';
 import Private from './components/Private'
 import AuthProvider from './context/auth';
+import WithoutNavbar from './components/WithoutNavbar';
+import WithNavbar from './components/WithNavbar';
 import { db, auth } from './firebase'
 import { doc, Timestamp, updateDoc } from 'firebase/firestore'
-import FaceMatch from './pages/FaceMatch';
 
 let timeout;
 
@@ -45,21 +47,23 @@ window.onbeforeunload = () => {
   }
 }
 
-// const handleUnload =
-
 function App() {
   return (
     <div onMouseLeave={startTimeout} onMouseEnter={stopTimeout}>
       <AuthProvider>
         <BrowserRouter>
-          <Navbar />
+          {/* <Navbar /> */}
           <Routes>
-            <Route exact path='/register' element={<Register />} />
-            <Route exact path='/login' element={<Login />} />
-            <Route exact path='/test' element={<Test />} />
-            <Route exact path='/profile/facematch' element={<Private><FaceMatch /></Private>} />
-            <Route exact path='/profile' element={<Private><Profile /></Private>} />
-            <Route exact path='/' element={<Private><Home /></Private>} />
+            <Route element={<WithNavbar />}>
+              <Route exact path='/register' element={<Register />} />
+              <Route exact path='/login' element={<Login />} />
+              <Route exact path='/test' element={<Test />} />
+              <Route exact path='/profile' element={<Private><Profile /></Private>} />
+              <Route exact path='/' element={<Private><Home /></Private>} />
+            </Route>
+            <Route element={<WithoutNavbar />}>
+              <Route exact path='/profile/facematch' element={<Private><FaceMatch /></Private>} />
+            </Route>
           </Routes>
         </BrowserRouter>
       </AuthProvider>
