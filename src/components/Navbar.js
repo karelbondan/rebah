@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { auth, db } from '../firebase'
 import { signOut, onAuthStateChanged } from 'firebase/auth'
-import { updateDoc, doc } from 'firebase/firestore'
+import { updateDoc, doc, Timestamp } from 'firebase/firestore'
 import { useNavigate } from 'react-router-dom'
 
 const Navbar = () => {
@@ -10,7 +10,8 @@ const Navbar = () => {
     const navigate = useNavigate();
     const handleLogout = async () => {
         await updateDoc(doc(db, 'users', auth.currentUser.uid), {
-            isOnline: false
+            isOnline: false,
+            lastSeen: Timestamp.fromDate(new Date())
         });
         await signOut(auth);
         console.log('logged out');
@@ -22,11 +23,11 @@ const Navbar = () => {
     })
 
     return (
-        <nav className='flex items-center justify-between h-16 x-screen px-20 border-b'>
-            <h3>
+        <nav className='flex items-center justify-between h-16 x-screen px-20 z-50 bg-slate-900 text-white'>
+            <h3 className='z-50'>
                 <Link to="/">Messenger</Link>
             </h3>
-            <div>
+            <div className='z-50'>
                 {userExist ?
                     <div className='space-x-2'>
                         <Link to={"/profile"}>Profile</Link>
