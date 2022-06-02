@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { db, auth, storage } from '../firebase'
 import { collection, query, where, onSnapshot, addDoc, Timestamp, orderBy, doc, setDoc, getDoc, updateDoc } from 'firebase/firestore'
 import { ref, getDownloadURL, uploadBytes } from 'firebase/storage';
@@ -51,7 +51,7 @@ const Home = () => {
       setMessages(messages)
     })
 
-    onSnapshot(doc(db, 'users', user2), docsnap=>{
+    onSnapshot(doc(db, 'users', user2), docsnap => {
       setChat(docsnap.data())
     })
 
@@ -135,7 +135,7 @@ const Home = () => {
                   </div>
                 </div>
               </div>
-              <div className="px-5 py-5 h-full overflow-auto">
+              <div className="px-5 py-5 h-full overflow-auto chat_view_area">
                 {messages.length ?
                   messages.map((message, i) => <Messages key={i} message={message} user1={user1} />)
                   :
