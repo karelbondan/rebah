@@ -2,6 +2,7 @@ import './App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
 import Navbar from './components/Navbar';
+import Invalid from './pages/Invalid';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import Test from './pages/Test';
@@ -19,20 +20,24 @@ let timeout;
 const startTimeout = async () => {
   // console.log("timer started")
   timeout = setTimeout(() => {
-    updateDoc(doc(db, 'users', auth.currentUser.uid), {
-      isOnline: false,
-      lastSeen: Timestamp.fromDate(new Date())
-    })
+    try {
+      updateDoc(doc(db, 'users', auth.currentUser.uid), {
+        isOnline: false,
+        lastSeen: Timestamp.fromDate(new Date())
+      })
+    } catch (e) { }
     // console.log("logged out user")
   }, 2000);
 }
 
 const stopTimeout = () => {
   clearTimeout(timeout);
-  updateDoc(doc(db, 'users', auth.currentUser.uid), {
-    isOnline: true,
-    lastSeen: ""
-  })
+  try {
+    updateDoc(doc(db, 'users', auth.currentUser.uid), {
+      isOnline: true,
+      lastSeen: ""
+    })
+  } catch (e) { }
   // console.log("timer stopped")
 }
 
@@ -52,7 +57,6 @@ function App() {
     <div onMouseLeave={startTimeout} onMouseEnter={stopTimeout}>
       <AuthProvider>
         <BrowserRouter>
-          {/* <Navbar /> */}
           <Routes>
             <Route element={<WithNavbar />}>
               <Route exact path='/register' element={<Register />} />
@@ -60,6 +64,7 @@ function App() {
               <Route exact path='/test' element={<Test />} />
               <Route exact path='/profile' element={<Private><Profile /></Private>} />
               <Route exact path='/' element={<Private><Home /></Private>} />
+              <Route exact path='*' element={<Invalid />} />
             </Route>
             <Route element={<WithoutNavbar />}>
               <Route exact path='/profile/facematch' element={<Private><FaceMatch /></Private>} />
