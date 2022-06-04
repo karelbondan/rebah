@@ -55,7 +55,7 @@ const Login = () => {
                             <div>
                                 <label htmlFor='email' className='px-2'>Email</label>
                                 <input
-                                    className='rounded-full mb-5 mt-1 px-4 h-10 border border-white border-opacity-60 opacity-70 focus:opacity-100 focus:border-opacity-90 bg-transparent outline-none w-full transition-all text-md'
+                                    className='rounded-full mb-5 mt-1 px-4 h-10 border border-white border-opacity-60 opacity-70 hover:border-opacity-70 hover:opacity-100 focus:opacity-100 focus:border-opacity-90 focus:bg-opacity-30 focus:bg-gray-800 bg-transparent outline-none w-full transition-all text-md'
                                     name="email"
                                     type="text"
                                     placeholder="E-mail"
@@ -66,10 +66,10 @@ const Login = () => {
                             <div>
                                 <label className='px-2'>Password</label>
                                 <input
-                                    className='rounded-full mb-5 mt-1 px-4 h-10 border border-white border-opacity-60 opacity-70 focus:opacity-100 focus:border-opacity-90 bg-transparent outline-none w-full transition-all text-md'
+                                    className='rounded-full mb-5 mt-1 px-4 h-10 border border-white border-opacity-60 opacity-70 hover:border-opacity-70 hover:opacity-100 focus:opacity-100 focus:border-opacity-90 focus:bg-opacity-30 focus:bg-gray-800 bg-transparent outline-none w-full transition-all text-md'
                                     name="password"
                                     type="password"
-                                    placeholder="**********"
+                                    placeholder="••••••••••••"
                                     onChange={handleChange}
                                     required
                                 />
