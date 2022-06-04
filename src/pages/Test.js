@@ -1,5 +1,7 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import defbg from '../components/items/bg3.jpg'
+// import { db } from '../firebase'
+// import { addDoc, collection } from 'firebase/firestore'
 
 const Test = () => {
     // let a = "sadakjdlksajd"
@@ -15,6 +17,15 @@ const Test = () => {
     });
     console.log(a)
 
+    // const test_upl = async () => {
+    //     await addDoc(collection(db, 'folders'), {
+    //         name: "test_folder"
+    //     })
+    // }
+
+    // useEffect(() => {
+    //     test_upl()
+    // }, [])
 
     return (
         // <div className='bg-gray-500 text-white flex items-center justify-center'>
