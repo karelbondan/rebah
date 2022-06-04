@@ -3,8 +3,10 @@ import defbg from '../components/items/bg3.jpg'
 import { auth, db } from '../firebase'
 import { doc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore'
 import { useNavigate } from 'react-router-dom'
+import { nodefluxAuth, nodefluxEnroll, nodefluxMatchEnroll, nodefluxDeleteEnroll, getPhotoID } from '../context/nodeflux'
 
 const FaceMatch = () => {
+    const [init, setInit] = useState(true)
     const [portrait, setPortrait] = useState("")
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(false)
@@ -17,8 +19,6 @@ const FaceMatch = () => {
     const [pageJobDone, setPageJobDone] = useState({ page_1: false, page_2: false, page_3: false, })
     const [passedPage, setPassedPage] = useState({ page_2: false, page_3: false })
 
-    const ACCESS_KEY = process.env.REACT_APP_ACCESS_KEY
-    const SECRET_ACCESS_KEY = process.env.REACT_APP_SECRET_ACCESS_KEY
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -46,7 +46,6 @@ const FaceMatch = () => {
                 stopVideo()
             } catch (e) {
                 // if error stopping video then just pass
-                console.log(e.message)
             }
         } else if (page.page_2) {
             if (!useVideo) {
@@ -63,8 +62,28 @@ const FaceMatch = () => {
         }
     }, [page])
 
+    useEffect(() => {
+        setTimeout(() => {
+            setInit(false)
+        }, 1500);
+    }, [])
+
+    const abortEverything = (e) => {
+        e.preventDefault()
+        const confirm_abort = window.confirm("Are you sure you want to cancel the whole process? If you have passed the face enrollment process, you will be prompted to verify your face whenever you sign into Rebah next time. Proceed?")
+        if (confirm_abort) {
+            try {
+                stopVideo()
+            } catch (e) {
+                // if error stopping video then just pass
+            }
+            navigate("/profile")
+        }
+    }
+
     const handleFinish = (e) => {
         e.preventDefault()
+        stopVideo()
         navigate("/profile")
     }
 
@@ -136,8 +155,12 @@ const FaceMatch = () => {
             video[0].srcObject.getTracks()[0].stop()
             video[1].srcObject.getTracks()[0].stop()
         } catch (e) {
-            video[1].srcObject.getTracks()[0].stop()
-            video[0].srcObject.getTracks()[0].stop()
+            try {
+                video[1].srcObject.getTracks()[0].stop()
+                video[0].srcObject.getTracks()[0].stop()
+            } catch (e) { 
+                // if error stopping again then just pass
+            }
         }
     }
 
@@ -191,146 +214,6 @@ const FaceMatch = () => {
         }
     }
 
-    const getPhotoID = (user_id) => {
-        // get the user ID from firebase auth and separate each string into an array element
-        const userID = [...user_id]
-        // converts the user ID to decimal representation of each string
-        let converted_userID = ""
-        userID.forEach(id_string => {
-            converted_userID += id_string.charCodeAt(0)
-        })
-        return converted_userID
-    }
-
-    const nodefluxAuth = async () => {
-        return await fetch("http://localhost:5000/api/nodeflux/authorization", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "access_key": ACCESS_KEY,
-                "secret_key": SECRET_ACCESS_KEY
-            })
-        }).then(response => {
-            return response.json()
-        }).then(authorization => {
-            const DATE = authorization.headers['x-nodeflux-timestamp'].slice(0, 8)
-            const TOKEN = authorization.token
-            return {
-                "auth_key": `NODEFLUX-HMAC-SHA256 Credential=${ACCESS_KEY}/${DATE}/nodeflux.api.v1beta1.ImageAnalytic/StreamImageAnalytic, SignedHeaders=x-nodeflux-timestamp, Signature=${TOKEN}`,
-                "timestamp": authorization.headers['x-nodeflux-timestamp']
-            }
-        }).catch(e => { console.log(e.message) })
-    }
-
-    const nodefluxDeleteEnroll = async (authorization = null) => {
-        let nodeflux_auth;
-        if (authorization) {
-            nodeflux_auth = {
-                "auth_key": authorization.auth_key,
-                "timestamp": authorization.timestamp
-            }
-        } else {
-            nodeflux_auth = await nodefluxAuth()
-        }
-        const photo_id = getPhotoID(auth.currentUser.uid)
-        // console.log(photo_id + String(typeof photo_id))
-
-        return await fetch('http://localhost:5000/api/nodeflux/face_enrollment_delete', {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": nodeflux_auth.auth_key,
-                "x-nodeflux-timestamp": nodeflux_auth.timestamp,
-            },
-            body: JSON.stringify({
-                "additional_params": {
-                    "face_id": photo_id
-                }
-            })
-        }).then(response => {
-            return response.json()
-        }).then(result => {
-            updateDoc(doc(db, 'users', auth.currentUser.uid), {
-                faceEnrollment: false,
-                faceEnrollmentID: ""
-            })
-            return { "response": result, "auth_key": nodeflux_auth.auth_key, "timestamp": nodeflux_auth.timestamp }
-        }).catch(e => { console.log(e.message) })
-    }
-
-    const nodefluxEnroll = async (authorization = null) => {
-        let nodeflux_auth;
-        // meaning it's been called before
-        if (authorization) {
-            nodeflux_auth = {
-                "auth_key": authorization.auth_key,
-                "timestamp": authorization.timestamp
-            }
-        } else {
-            nodeflux_auth = await nodefluxAuth()
-        }
-        // getting the decimal representation of current user id
-        const photo_id = getPhotoID(auth.currentUser.uid)
-
-        return fetch("http://localhost:5000/api/nodeflux/face_enrollment", {
-            method: "POST",
-            headers: {
-                "authorization": nodeflux_auth.auth_key,
-                "x-nodeflux-timestamp": nodeflux_auth.timestamp,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "additional_params": {
-                    "auto_orientation": false,
-                    "face_id": photo_id
-                },
-                "images": [portrait && !useVideo ? portrait : capturedImg]
-            })
-        }).then(response => {
-            return response.json()
-        }).then(result => {
-            return { "response": result, "auth_key": nodeflux_auth.auth_key, "timestamp": nodeflux_auth.timestamp }
-        }).catch(e => { console.log(e) })
-    }
-
-    const nodefluxMatchEnroll = async (authorization = null) => {
-        let nodeflux_auth;
-        // meaning it's been called before
-        if (authorization) {
-            nodeflux_auth = {
-                "auth_key": authorization.auth_key,
-                "timestamp": authorization.timestamp
-            }
-        } else {
-            nodeflux_auth = await nodefluxAuth()
-        }
-        // getting the decimal representation of current user id
-        const photo_id = getPhotoID(auth.currentUser.uid)
-        return fetch("http://localhost:5000/api/nodeflux/face_match", {
-            method: "POST",
-            headers: {
-                "authorization": nodeflux_auth.auth_key,
-                "x-nodeflux-timestamp": nodeflux_auth.timestamp,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "additional_params": {
-                    "auto_orientation": false,
-                    "get_main_face": true,
-                    "face_id": photo_id
-                },
-                "images": [capturedImg]
-            })
-        }).then(response => {
-            return response.json()
-        }).then(result => {
-            console.log(result)
-            return { "response": result, "auth_key": nodeflux_auth.auth_key, "timestamp": nodeflux_auth.timestamp }
-        }).catch(e => { console.log(e) })
-    }
-
     const handleNodefluxEnroll = async () => {
         setLoading(true)
         let nodeflux_auth = await nodefluxAuth()
@@ -345,7 +228,10 @@ const FaceMatch = () => {
             let status;
             let result;
             while (['success', 'incompleted'].includes(status) !== true) {
-                result = await nodefluxEnroll({ "auth_key": nodeflux_auth.auth_key, "timestamp": nodeflux_auth.timestamp })
+                result = await nodefluxEnroll({
+                    "auth_key": nodeflux_auth.auth_key,
+                    "timestamp": nodeflux_auth.timestamp
+                }, portrait && !useVideo ? portrait : capturedImg)
                 status = result.response.job.result.status
                 await doSomething(1000)
                 console.log(status)
@@ -363,6 +249,7 @@ const FaceMatch = () => {
                     faceEnrollmentID: photo_id
                 })
                 alert("Face Enrollment succeeded! The verification process will begin afterwards.")
+                setPageJobDone({ ...pageJobDone, page_1: true })
             } else {
                 alert(result.response.message)
             }
@@ -391,7 +278,10 @@ const FaceMatch = () => {
             }
             status = undefined
             while (['success', 'incompleted'].includes(status) !== true) {
-                result = await nodefluxEnroll({ "auth_key": nodeflux_auth.auth_key, "timestamp": nodeflux_auth.timestamp })
+                result = await nodefluxEnroll({
+                    "auth_key": nodeflux_auth.auth_key,
+                    "timestamp": nodeflux_auth.timestamp
+                }, portrait && !useVideo ? portrait : capturedImg)
                 status = result.response.job.result.status
                 await doSomething(1000)
                 console.log("Returned status: " + status)
@@ -409,6 +299,9 @@ const FaceMatch = () => {
                     faceEnrollmentID: photo_id
                 })
                 alert("Face Enrollment succeeded! The verification process will begin afterwards.")
+                setPageJobDone({ ...pageJobDone, page_1: true })
+            } else {
+                alert(result.response.message)
             }
             // set loading to false here
             return;
@@ -424,7 +317,6 @@ const FaceMatch = () => {
         } else {
             await loop().then(() => console.log("New face enrollment success"))
         }
-        setPageJobDone({ ...pageJobDone, page_1: true })
         setLoading(false)
     }
 
@@ -442,7 +334,10 @@ const FaceMatch = () => {
             let status;
             let result;
             while (['success', 'incompleted'].includes(status) !== true) {
-                result = await nodefluxMatchEnroll({ "auth_key": nodeflux_auth.auth_key, "timestamp": nodeflux_auth.timestamp })
+                result = await nodefluxMatchEnroll({
+                    "auth_key": nodeflux_auth.auth_key,
+                    "timestamp": nodeflux_auth.timestamp
+                }, capturedImg)
                 status = result.response.job.result.status
                 await doSomething(1000)
                 console.log("Returned status: " + status)
@@ -457,6 +352,7 @@ const FaceMatch = () => {
                     faceEnrollmentID: photo_id
                 })
                 alert("Face verification succeeded! You will be prompted to verify your identity by photo the next time you sign in into Rebah.")
+                setPageJobDone({ ...pageJobDone, page_2: true })
             } else {
                 alert(result.response.message)
             }
@@ -466,12 +362,25 @@ const FaceMatch = () => {
 
         await loop().then(() => {
             console.log('Face match verification succeeded')
-            setPageJobDone({ ...pageJobDone, page_2: true })
         })
         setLoading(false)
     }
 
-    return (
+    return init ? (
+        <div className='overflow-hidden z-0'>
+            <div className='z-50 flex flex-col items-center justify-center overflow-auto bg-gray-900 h-screen w-screen'>
+                <h3 className='z-50 loading_dots text-white text-4xl'>
+                    ••••••
+                </h3>
+                {/* <h3 className='text-white text-4xl'>
+                    Loading
+                </h3> */}
+            </div>
+            <div className='w-0 h-screen fixed top-0 left-0 z-0'>
+                <img className='opacity-30 min-h-max min-w-max ' src={defbg}></img>
+            </div>
+        </div>
+    ) : (
         <div className='overflow-hidden'>
             <div className='w-0 h-screen z-0 fixed'>
                 <img className='opacity-30 left-0 top-0 min-h-max min-w-max' src={defbg}></img>
@@ -480,18 +389,27 @@ const FaceMatch = () => {
                 <div className='flex text-white h-screen w-screen justify-center items-center'>
                     <div className='z-50 bg-gray-700 px-10 py-10 space-y-6 rounded-lg shadow-xl'>
                         {/* header */}
-                        <div className='header flex items-center justify-center -space-x-1'>
-                            {/* preventing inf loop in onClick func (i dont grasp the basic yet but without the arrow func it's basically infinite loop) */}
-                            <div title='Upload photo' className='bg-slate-400 border-4 border-slate-400 rounded-full h-6 w-6 cursor-pointer z-20' onClick={() => { handleSetPage('page_1') }}></div>
-                            <div className={`${passedPage.page_2 ? "bg-slate-400" : "bg-white"} w-24 h-1 z-10`}></div>
-                            <div title='Verification test' className={`${passedPage.page_2 ? "bg-slate-400 " : "bg-white"} rounded-full h-6 w-6 cursor-pointer z-20`} onClick={() => { handleSetPage('page_2') }}></div>
-                            <div className={`${passedPage.page_3 ? "bg-slate-400" : "bg-white"} w-24 h-1 z-10`}></div>
-                            <div title='Finalization' className={`${passedPage.page_3 ? "bg-slate-400 " : "bg-white"} rounded-full h-6 w-6 cursor-pointer z-20`} onClick={() => { handleSetPage('page_3') }}></div>
-                            {/* <div className='bg-white w-24 h-1 z-10'></div>
+                        <div className='-space-y-9'>
+                            <div className='text-right'>
+                                <button className='hover:bg-gray-800 rounded-full px-2 py-2 transition-all focus:outline-none' onClick={abortEverything}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div className='header flex items-center justify-center -space-x-1'>
+                                {/* preventing inf loop in onClick func (i dont grasp the basic yet but without the arrow func it's basically infinite loop) */}
+                                <div title='Upload photo' className='bg-slate-400 border-4 border-slate-400 rounded-full h-6 w-6 cursor-pointer z-20' onClick={() => { handleSetPage('page_1') }}></div>
+                                <div className={`${passedPage.page_2 ? "bg-slate-400" : "bg-white"} w-24 h-1 z-10`}></div>
+                                <div title='Verification test' className={`${passedPage.page_2 ? "bg-slate-400 " : "bg-white"} rounded-full h-6 w-6 cursor-pointer z-20`} onClick={() => { handleSetPage('page_2') }}></div>
+                                <div className={`${passedPage.page_3 ? "bg-slate-400" : "bg-white"} w-24 h-1 z-10`}></div>
+                                <div title='Finalization' className={`${passedPage.page_3 ? "bg-slate-400 " : "bg-white"} rounded-full h-6 w-6 cursor-pointer z-20`} onClick={() => { handleSetPage('page_3') }}></div>
+                                {/* <div className='bg-white w-24 h-1 z-10'></div>
                             <div className='bg-white rounded-full h-6 w-6 cursor-pointer z-20'></div> */}
+                            </div>
                         </div>
                         {/* body */}
-                        <div className='body_container border-yellow-500'>
+                        <div className='body_container'>
                             {/* page 1*/}
                             <div className={`${page.page_1 ? "h-[580px] flex" : "hidden"}`}>
                                 {/* page 1 - upload photo*/}
@@ -506,7 +424,7 @@ const FaceMatch = () => {
                                     </div>
                                     <div className={`${portrait ? "max-h-72 w-fit" : "h-72 w-72 bg-slate-600 rounded-xl"} flex items-center justify-center`}>
                                         {portrait ?
-                                            <img className='max-h-72 max-w-2xl rounded-lg' src={portrait} />
+                                            <img className='h-72 max-h-72 max-w-2xl rounded-lg' src={portrait} />
                                             :
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-32 w-32 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
