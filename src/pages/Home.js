@@ -11,12 +11,23 @@ import defbg from '../components/items/bg3.jpg'
 
 const Home = () => {
   const [users, setUsers] = useState([])
-  const [chat, setChat] = useState("");
-  const [text, setText] = useState("");
-  const [img, setImg] = useState("");
-  const [messages, setMessages] = useState([]);
+  const [chat, setChat] = useState("")
+  const [currentChat, setCurrentChat] = useState("")
+  const [text, setText] = useState("")
+  const [img, setImg] = useState("")
+  const [messages, setMessages] = useState([])
+  const [sending, setSending] = useState(false)
+  const [edit, setEdit] = useState(false)
+  const [previousData, setPreviousData] = useState()
+  const messagesRef = useRef(null)
 
   const user1 = auth.currentUser.uid;
+
+  useEffect(() => {
+    if (messagesRef.current) {
+      scrollToBottom();
+    }
+  }, [messagesRef, previousData, currentChat])
 
   useEffect(() => {
     const userref = collection(db, 'users')
@@ -33,6 +44,12 @@ const Home = () => {
 
     return () => { unsub() }
   }, [])
+
+  const scrollToBottom = () => {
+    messagesRef.current.scrollIntoView({
+      behavior: "smooth", block: "nearest"
+    });
+  }
 
   const selectusr = async (user) => {
     setChat(user);
@@ -63,10 +80,20 @@ const Home = () => {
         unreadCount: 0
       })
     }
+    // set this here because the useRef() needs time to get the referenced element
+    setTimeout(() => {
+      setCurrentChat(user.uid)
+    }, 500);
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!text) {
+      return;
+    }
+    setText("")
+    setImg("")
+    setSending(true)
 
     const user2 = chat.uid
     const id = user1 > user2 ? `${user1 + user2}` : `${user2 + user1}`
@@ -92,6 +119,7 @@ const Home = () => {
     try {
       let q = await getDoc(doc(db, "lastMessage", id))
       previous_data = q.data()
+      setPreviousData(q.data())
     } catch (e) {
       console.log(e)
     }
@@ -105,8 +133,7 @@ const Home = () => {
       unread: true,
       unreadCount: previous_data.from === user1 ? previous_data.unreadCount + 1 : 1
     })
-    setText("")
-    setImg("")
+    setSending(false)
   }
 
   return (
@@ -135,7 +162,7 @@ const Home = () => {
                   </div>
                 </div>
               </div>
-              <div className="px-5 py-5 h-full overflow-auto chat_view_area">
+              <div id="chat_view_area" className="px-5 py-5 h-full overflow-auto">
                 {messages.length ?
                   messages.map((message, i) => <Messages key={i} message={message} user1={user1} />)
                   :
@@ -143,9 +170,10 @@ const Home = () => {
                     <h3>No message yet. Send one!</h3>
                   </div>
                 }
+                <div ref={messagesRef} />
               </div>
               <div className='z-50'>
-                <Message handleSubmit={handleSubmit} text={text} setText={setText} setImg={setImg} img={img} />
+                <Message handleSubmit={handleSubmit} text={text} setText={setText} setImg={setImg} img={img} sending={sending} />
               </div>
             </div>
             :
