@@ -2,15 +2,17 @@ import React, { useState, useEffect } from 'react'
 import img from '../components/items/default.jpg'
 import { storage, db, auth } from '../firebase';
 import { ref, getDownloadURL, uploadBytes, deleteObject } from 'firebase/storage';
-import { getDoc, doc, updateDoc } from 'firebase/firestore';
+import { getDoc, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom'
+import { nodefluxAuth, nodefluxDeleteEnroll } from '../context/nodeflux';
 import defbg from '../components/items/bg3.jpg'
 import nodeflux_original from '../components/items/nodeflux_logo.png'
 import nodeflux_white from '../components/items/nodeflux_logo_white.png'
 
 const Profile = () => {
     const [loading, setLoading] = useState(false)
+    const [useFaceMatch, setUseFaceMatch] = useState(false)
     const [pic, setPic] = useState("");
     const [user, setUser] = useState();
     const [edit, setEdit] = useState(false);
@@ -19,6 +21,48 @@ const Profile = () => {
     });
     const navigate = useNavigate();
     const { username } = form;
+
+    useEffect(() => {
+        let facematch_listener = onSnapshot(doc(db, 'users', auth.currentUser.uid), doc => {
+            setUseFaceMatch(doc.data().faceEnrollment)
+        })
+        return () => facematch_listener()
+    }, [])
+
+    const doSomething = delay_amount_ms =>
+        new Promise(resolve => setTimeout(() => resolve("delay"), delay_amount_ms))
+
+    const loop_delete_enroll = async () => {
+        // set loading to true here
+        let status, result;
+        let nodeflux_auth = await nodefluxAuth()
+        while (['success', 'incompleted'].includes(status) !== true) {
+            result = await nodefluxDeleteEnroll({ "auth_key": nodeflux_auth.auth_key, "timestamp": nodeflux_auth.timestamp })
+            status = result.response.job.result.status
+            await doSomething(1000)
+            console.log("Returned status: " + status)
+        }
+        return result
+    }
+
+    const handleFooterButtons = async (e, todo = 'default') => {
+        e.preventDefault()
+        if (todo === "disable") {
+            const disable_confirm = window.confirm("Are you sure you want to disable sign in using Face Match?")
+            if (disable_confirm) {
+                setLoading(true)
+                const delete_result = await loop_delete_enroll()
+                if (delete_result.response.job.result.status === 'incompleted') {
+                    alert("Something happened during the deletion of the record data and resulted in failure. Please try again")
+                } else {
+                    alert("Sign in using Face Match has been successfully disabled. Feel free to enable it again at any time")
+                }
+                setLoading(false)
+            }
+        } else {
+            navigate("/profile/facematch")
+        }
+    }
 
     const uploadIMG = () => {
         let input = document.createElement('input');
@@ -193,36 +237,49 @@ const Profile = () => {
                             </div>
                         </div>
                         <hr className='my-4 opacity-30'></hr>
-                        <div className='text-center'> {/*set hidden if have face enrollment*/}
-                            <a className='hover:opacity-100 opacity-50 transition-all' href="/profile/facematch">
+                        <div className={`text-center ${loading ? "" : "hidden"}`}>
+                            <button className='hover:opacity-100 opacity-50 transition-all' disabled={true}>
                                 <p>
-                                    Enable sign in with Face Match
+                                    Please wait
                                     <br />
                                     <span className='flex items-center justify-center space-x-1 text-xs'>
-                                        <p>Powered by</p> <img className='height-nodeflux' src={nodeflux_white} />
+                                        <span>Loading...</span>
                                     </span>
                                 </p>
-                            </a>
+                            </button>
                         </div>
-                        <div className='flex items-center justify-evenly text-center space-x-6'> {/*set hidden if not have face enrollment*/}
-                            <a className='hover:opacity-100 opacity-50 transition-all' href="https://www.w3schools.com">
-                                <p>
-                                    Change Face Match model
-                                    <br />
-                                    <span className='flex items-center justify-center space-x-1 text-xs'>
-                                        <p>Powered by</p> <img className='height-nodeflux' src={nodeflux_white} />
-                                    </span>
-                                </p>
-                            </a>
-                            <a className='hover:opacity-100 hover:text-red-500 opacity-50 transition-all grayscale hover:grayscale-0' href="/">
-                                <p>
-                                    Disable sign in with Face Match
-                                    <br />
-                                    <span className='flex items-center justify-center space-x-1 text-xs'>
-                                        <p>Powered by</p> <img className='height-nodeflux ' src={nodeflux_white} />
-                                    </span>
-                                </p>
-                            </a>
+                        <div className={`footer_container ${loading ? "hidden" : ""}`}>
+                            <div className={`text-center ${useFaceMatch ? "hidden" : ""}`}> {/*set hidden if have face enrollment*/}
+                                <button className='hover:opacity-100 opacity-50 transition-all' onClick={handleFooterButtons}>
+                                    <p>
+                                        Enable sign in with Face Match
+                                        <br />
+                                        <span className='flex items-center justify-center space-x-1 text-xs'>
+                                            <span>Powered by</span> <img className='height-nodeflux' src={nodeflux_white} />
+                                        </span>
+                                    </p>
+                                </button>
+                            </div>
+                            <div className={`flex items-center justify-evenly text-center space-x-6 ${useFaceMatch ? "" : "hidden"}`}> {/*set hidden if not have face enrollment*/}
+                                <button className='hover:opacity-100 opacity-50 transition-all' onClick={handleFooterButtons}>
+                                    <p>
+                                        Change Face Match model
+                                        <br />
+                                        <span className='flex items-center justify-center space-x-1 text-xs'>
+                                            <span>Powered by</span> <img className='height-nodeflux' src={nodeflux_white} />
+                                        </span>
+                                    </p>
+                                </button>
+                                <button className='hover:opacity-100 hover:text-red-500 opacity-50 transition-all grayscale hover:grayscale-0' onClick={(e) => { handleFooterButtons(e, "disable") }}>
+                                    <p>
+                                        Disable sign in with Face Match
+                                        <br />
+                                        <span className='flex items-center justify-center space-x-1 text-xs'>
+                                            <span>Powered by</span> <img className='height-nodeflux ' src={nodeflux_white} />
+                                        </span>
+                                    </p>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
