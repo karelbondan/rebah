@@ -56,6 +56,14 @@ code {
   50% {letter-spacing: 10px;}
 }
 
+.take_me_home {
+  animation: take_me 2s infinite
+}
+
+@keyframes take_me {
+  50% {opacity: 100;}
+}
+
 .navbar {
   z-index: 100;
 }
@@ -66,4 +74,12 @@ code {
 
 .background {
   z-index: 0;
+}
+
+.menu_container {
+  visibility: hidden;
+}
+
+.all_messages_container:hover .menu_container {
+  visibility: visible;
 }
