@@ -83,3 +83,8 @@ code {
 .all_messages_container:hover .menu_container {
   visibility: visible;
 }
+
+textarea {
+  resize: none;
+  height: 40px;
+}
