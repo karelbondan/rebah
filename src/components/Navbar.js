@@ -31,7 +31,7 @@ const Navbar = () => {
                 {userExist ?
                     <div className='space-x-2'>
                         <Link to={"/profile"}>Profile</Link>
-                        <button onClick={handleLogout}>Logout</button>
+                        {/* <button onClick={handleLogout}>Logout</button> */}
                     </div> :
                     <div className='space-x-2'>
                         <Link to='/register'>Register</Link>
