@@ -10,6 +10,7 @@ import defimg from '../components/items/default.jpg'
 import defbg from '../components/items/bg3.jpg'
 
 const Home = () => {
+  // initial variables
   const [users, setUsers] = useState([])
   const [chat, setChat] = useState("")
   const [currentChat, setCurrentChat] = useState("")
@@ -17,11 +18,19 @@ const Home = () => {
   const [img, setImg] = useState("")
   const [messages, setMessages] = useState([])
   const [sending, setSending] = useState(false)
-  const [edit, setEdit] = useState(false)
   const [previousData, setPreviousData] = useState()
   const messagesRef = useRef(null)
 
+  // assign the current user's uid to a new var 
   const user1 = auth.currentUser.uid;
+
+  // these two here are a pain in the arf but i finally managed to make it work :D
+  // scrolls to bottom whenever a new message is arrived or when a new msg is sent 
+  const scrollToBottom = () => {
+    messagesRef.current.scrollIntoView({
+      behavior: "smooth", block: "nearest"
+    });
+  }
 
   useEffect(() => {
     if (messagesRef.current) {
@@ -29,11 +38,10 @@ const Home = () => {
     }
   }, [messagesRef, previousData, currentChat])
 
+  // for listing the registered users in the available-to-chat users list
   useEffect(() => {
     const userref = collection(db, 'users')
-    // create query
     const qry = query(userref, where('uid', 'not-in', [user1]))
-    // execute query
     const unsub = onSnapshot(qry, querysnap => {
       let users = []
       querysnap.forEach(doc => {
@@ -41,25 +49,25 @@ const Home = () => {
       })
       setUsers(users);
     })
-
     return () => { unsub() }
   }, [])
 
-  const scrollToBottom = () => {
-    messagesRef.current.scrollIntoView({
-      behavior: "smooth", block: "nearest"
-    });
-  }
-
   const selectusr = async (user) => {
+    // set the chat to the current selected recipient
     setChat(user);
 
+    // set the recipient's uid to a new var 
     const user2 = user.uid
+    // make a new combination id between current user's and recipient's uids for storing msgs
     const id = user1 > user2 ? `${user1 + user2}` : `${user2 + user1}`
 
+    // query messages between the current user and the selected recipient
     const msgref = collection(db, 'messages', id, 'chat')
     const qry = query(msgref, orderBy('createdAt', 'asc'))
 
+    // update the messages list everytime any of the document inside the collection 
+    // changes. besides detecting new messages both when sending and receiving, it's 
+    // also very useful to detect update and deletion of messages
     onSnapshot(qry, querysnap => {
       let messages = []
       querysnap.forEach(doc => {
@@ -88,6 +96,7 @@ const Home = () => {
     }, 500);
   }
 
+  // function to handle PUT request to push the message to firebase db
   const handleSubmit = async (e) => {
     e.preventDefault()
     // check if text is empty or only contains a bunch of newlines, if true then dont do anything
@@ -95,12 +104,20 @@ const Home = () => {
       setText("")
       return;
     }
+    // setting things up, setText is immediately set to none for responsiveness, setIMG as well is set 
+    // to none to avoid overlapping with the 'sending' indicator
     setText("")
     setImg("")
     setSending(true)
 
+    // assign recipient's uid to a new variable
     const user2 = chat.uid
+
+    // make a new id which is a combination of current user's and recipient's uids 
     const id = user1 > user2 ? `${user1 + user2}` : `${user2 + user1}`
+
+    // if user attaches an image to the message then upload that image to firebase and
+    // reference the download path to the url var declared below
     let url;
     if (img) {
       const imgref = ref(storage, `images/${new Date().getTime()} - ${img.name}`)
