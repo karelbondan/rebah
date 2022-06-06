@@ -123,7 +123,7 @@ const Register = () => {
                             <br/>
                             <div className='flex justify-center space-x-1 text-sm opacity-70'>
                                 <p>Already have an account?</p>
-                                <button className='border-b opacity-70 hover:opacity-100 transition-all outline-none' onClick={navigateLogin}>
+                                <button className='border-b opacity-70 hover:opacity-100 transition-all outline-none disabled:opacity-50' onClick={navigateLogin} disabled={loading ? true : false}>
                                     Sign in
                                 </button>
                                 <p>instead</p>
