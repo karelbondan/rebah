@@ -23,11 +23,12 @@ const Messages = ({ message, user1 }) => {
         try {
             onSnapshot(doc(db, 'messages', message.chatID, 'chat', message.messageID), docsnap => {
                 try {
+                    // console.log(docsnap.data())
                     setText(docsnap.data().text)
-                } catch (e) { console.log(e) }
+                } catch (e) { }
             })
         } catch (e) { console.log(e) }
-    }, [])
+    }, [message])
 
     const handleChange = (e) => {
         // preventing from entering new line
@@ -58,7 +59,9 @@ const Messages = ({ message, user1 }) => {
         else if (e.keyCode === 13 || keycode === 13) {
             // update message in firebase
             setEdit(false)
-            // console.log("submit edit")
+            if (text === message.text) {
+                return
+            }
             await updateDoc(doc(db, 'messages', message.chatID, 'chat', message.messageID), {
                 text: text,
                 edited: true
