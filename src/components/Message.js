@@ -8,6 +8,10 @@ const Message = ({ handleSubmit, text, setText, setImg, img, sending }) => {
         input.accept = 'image/*'
         input.onchange = _this => {
             let files = Array.from(input.files)[0];
+            if (files.type !== 'image/jpg' || files.type !== 'image/jpeg' || files.type !== 'image/png') {
+                alert("Please upload only image formatted file (JPG/PNG)")
+                return
+            }
             setImg(files)
             console.log(files)
             console.log(files.size * 2 ** -10)
