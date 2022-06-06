@@ -67,7 +67,8 @@ export const nodefluxDeleteEnroll = async (authorization = null) => {
     }).then(result => {
         updateDoc(doc(db, 'users', auth.currentUser.uid), {
             faceEnrollment: false,
-            faceEnrollmentID: ""
+            faceEnrollmentID: "",
+            hasVerifiedSignIn: false
         })
         return { "response": result, "auth_key": nodeflux_auth.auth_key, "timestamp": nodeflux_auth.timestamp }
     }).catch(e => { console.log(e.message) })
