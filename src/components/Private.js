@@ -4,11 +4,11 @@ import { Navigate } from 'react-router-dom'
 
 const Private = ({ children }) => {
     let userExist = auth.currentUser
-    if (!userExist){
+    if (!userExist) {
         return (
-            <Navigate to={'/login'} replace/>
+            <Navigate to={'/login'} replace />
         )
-    }
+    } 
     return children;
 }
 
