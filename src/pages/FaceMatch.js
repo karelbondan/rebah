@@ -21,6 +21,22 @@ const FaceMatch = () => {
 
     const navigate = useNavigate()
 
+    // check if user has been verified or not. if not then redirect them again to the
+    // login page, else let them stay in this page
+    useEffect(() => {
+        const verify_test = async () => {
+            setLoading(true)
+            const verify = await getDoc(doc(db, 'users', auth.currentUser.uid))
+            if (verify.data().faceEnrollment && !verify.data().hasVerifiedSignIn) {
+                navigate("/login")
+                console.log("sjdh kjashdjk ah")
+            }
+            setLoading(false)
+
+        }
+        verify_test()
+    }, [])
+
     useEffect(() => {
         try {
             async function updateEnrollment() {
@@ -158,7 +174,7 @@ const FaceMatch = () => {
             try {
                 video[1].srcObject.getTracks()[0].stop()
                 video[0].srcObject.getTracks()[0].stop()
-            } catch (e) { 
+            } catch (e) {
                 // if error stopping again then just pass
             }
         }
