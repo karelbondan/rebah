@@ -140,7 +140,7 @@ const Login = () => {
                 await doSomething(1000)
                 console.log("Returned status: " + status)
             }
-            console.log(result) // DISABLE LATER
+            // console.log(result) // DISABLE LATER
             if (result.response.message === "No face detected") {
                 alert("No face detected in the photo you submitted. Please upload a photo with your face being shown clearly in the photo. Try to upload a non-blurry photo too to maximize the accuracy of the face matching verification.")
 
@@ -154,6 +154,10 @@ const Login = () => {
                 await updateDoc(doc(db, 'users', auth.currentUser.uid), {
                     hasVerifiedSignIn: true
                 })
+                try {
+                    stopVideo()
+                } catch (e) { }
+                navigate("/")
             } else {
                 alert(result.response.message)
             }
@@ -186,7 +190,8 @@ const Login = () => {
         try {
             const res = await signInWithEmailAndPassword(auth, email, password);
             await updateDoc(doc(db, 'users', res.user.uid), {
-                isOnline: true
+                isOnline: true,
+                lastSeen: ""
             });
             setLoading(false)
             // setForm({ email: "", password: "", err: null, loading: false })
@@ -256,7 +261,7 @@ const Login = () => {
                                 <br />
                                 <div className='flex justify-center space-x-1 text-sm opacity-70'>
                                     <p>Don't have an account?</p>
-                                    <button className='border-b opacity-70 hover:opacity-100 transition-all outline-none' onClick={navigateRegister}>
+                                    <button className='border-b opacity-70 hover:opacity-100 transition-all outline-none disabled:opacity-50' onClick={navigateRegister} disabled={loading ? true : false}>
                                         Register
                                     </button>
                                     <p>instead</p>
@@ -298,7 +303,7 @@ const Login = () => {
                                     </div>
                                     <div className='flex justify-center space-x-1 text-sm opacity-70'>
                                         <p>Not {auth.currentUser ? auth.currentUser.email : "placeholder@email.com"}?</p>
-                                        <button className='border-b opacity-70 hover:opacity-100 transition-all outline-none' onClick={handleSignOutNotMe}>
+                                        <button className='border-b opacity-70 hover:opacity-100 transition-all outline-none disabled:opacity-50' onClick={handleSignOutNotMe} disabled={pageJobDone ? true : false || loading ? true : false}>
                                             Sign out
                                         </button>
                                         <p>and sign in again using your account</p>
