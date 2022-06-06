@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import img from '../components/items/default.jpg'
 import { storage, db, auth } from '../firebase';
 import { ref, getDownloadURL, uploadBytes, deleteObject } from 'firebase/storage';
-import { getDoc, doc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { getDoc, doc, updateDoc, onSnapshot, Timestamp } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom'
 import { nodefluxAuth, nodefluxDeleteEnroll } from '../context/nodeflux';
@@ -21,6 +21,22 @@ const Profile = () => {
     });
     const navigate = useNavigate();
     const { username } = form;
+
+    // check if user has been verified or not. if not then redirect them again to the
+    // login page, else let them stay in this page
+    useEffect(() => {
+        const verify_test = async () => {
+            setLoading(true)
+            const verify = await getDoc(doc(db, 'users', auth.currentUser.uid))
+            if (verify.data().faceEnrollment && !verify.data().hasVerifiedSignIn) {
+                navigate("/login")
+                console.log("sjdh kjashdjk ah")
+            }
+            setLoading(false)
+
+        }
+        verify_test()
+    }, [])
 
     useEffect(() => {
         let facematch_listener = onSnapshot(doc(db, 'users', auth.currentUser.uid), doc => {
@@ -70,6 +86,10 @@ const Profile = () => {
         input.accept = 'image/*'
         input.onchange = _this => {
             let files = Array.from(input.files)[0];
+            if (files.type !== 'image/jpg' || files.type !== 'image/jpeg' || files.type !== 'image/png') {
+                alert("Please upload only image formatted file (JPG/PNG)")
+                return
+            }
             setPic(files)
         };
         input.click();
@@ -103,7 +123,9 @@ const Profile = () => {
 
     const handleLogout = async () => {
         await updateDoc(doc(db, 'users', auth.currentUser.uid), {
-            isOnline: false
+            isOnline: false,
+            lastSeen: Timestamp.fromDate(new Date()),
+            hasVerifiedSignIn: false
         });
         await signOut(auth);
         console.log('logged out');
@@ -207,7 +229,7 @@ const Profile = () => {
                                                 </svg>
                                             </button>
                                         </div>
-                                        <form hidden={edit ? false : true} className='space-y-2' autoComplete="off">
+                                        <form hidden={edit ? false : true} className='space-y-2' autoComplete="none">
                                             <input
                                                 className=' bg-gray-700 border-slate-400 text-5xl font-bold text-center focus:outline-none' name="username" type="text" maxLength="16" size="13" placeholder={user.username} onChange={handleChange} required
                                             />
