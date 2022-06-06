@@ -86,11 +86,18 @@ const Profile = () => {
         input.accept = 'image/*'
         input.onchange = _this => {
             let files = Array.from(input.files)[0];
-            if (files.type !== 'image/jpg' || files.type !== 'image/jpeg' || files.type !== 'image/png') {
+            // if (files.type !== 'image/jpg' || files.type !== 'image/jpeg' || files.type !== 'image/png') {
+            //     console.log(files.type)
+            //     console.log(typeof(files.type))
+            //     alert("Please upload only image formatted file (JPG/PNG)")
+            //     return
+            // }
+            if (/^image\/[\w]+$/.exec(files.type)) {
+                setPic(files)
+            } else {
                 alert("Please upload only image formatted file (JPG/PNG)")
                 return
             }
-            setPic(files)
         };
         input.click();
     }
@@ -122,6 +129,7 @@ const Profile = () => {
     }
 
     const handleLogout = async () => {
+        setLoading(true)
         await updateDoc(doc(db, 'users', auth.currentUser.uid), {
             isOnline: false,
             lastSeen: Timestamp.fromDate(new Date()),
@@ -129,6 +137,7 @@ const Profile = () => {
         });
         await signOut(auth);
         console.log('logged out');
+        setLoading(false)
         navigate("/login");
     }
 
