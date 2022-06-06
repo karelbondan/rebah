@@ -8,6 +8,7 @@ import Messages from '../components/Messages';
 import Moment from 'react-moment'
 import defimg from '../components/items/default.jpg'
 import defbg from '../components/items/bg3.jpg'
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   // initial variables
@@ -19,7 +20,26 @@ const Home = () => {
   const [messages, setMessages] = useState([])
   const [sending, setSending] = useState(false)
   const [previousData, setPreviousData] = useState()
+  const [init, setInit] = useState()
+  const [loading, setLoading] = useState(false)
   const messagesRef = useRef(null)
+  const navigate = useNavigate()
+
+  // check if user has been verified or not. if not then redirect them again to the
+  // login page, else let them stay in this page
+  useEffect(() => {
+    const verify_test = async () => {
+      setLoading(true)
+      const verify = await getDoc(doc(db, 'users', auth.currentUser.uid))
+      if (verify.data().faceEnrollment && !verify.data().hasVerifiedSignIn) {
+        navigate("/login")
+        console.log("sjdh kjashdjk ah")
+      } 
+      setLoading(false)
+
+    }
+    verify_test()
+  }, [])
 
   // assign the current user's uid to a new var 
   const user1 = auth.currentUser.uid;
@@ -182,7 +202,21 @@ const Home = () => {
     setSending(false)
   }
 
-  return (
+  return loading ? (
+    <div className='overflow-hidden z-0'>
+      <div className='z-50 flex flex-col items-center justify-center overflow-auto bg-gray-900 h-screen w-screen'>
+        <h3 className='z-50 loading_dots text-white text-4xl'>
+          ••••••
+        </h3>
+        {/* <h3 className='text-white text-4xl'>
+          Loading
+      </h3> */}
+      </div>
+      <div className='w-0 h-screen fixed top-0 left-0 z-0'>
+        <img className='opacity-30 min-h-max min-w-max ' src={defbg}></img>
+      </div>
+    </div>
+  ) : (
     <div className='flex bg-gray-900 justify-center z-20'>
       <div className='z-0'>
       </div>
