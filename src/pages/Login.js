@@ -112,7 +112,9 @@ const Login = () => {
         setCapturedImg("")
         if (!captured) {
             let canvas = document.getElementsByClassName('video_capture_canvas_page_2 rounded-lg h-80')[0]
-            // let vid_data = videoElem.getBoundingClientRect();
+            let video = videoElem.getBoundingClientRect()
+            canvas.width = video.width
+            canvas.height = video.height
             canvas.getContext('2d').drawImage(videoElem, 0, 0, canvas.width, canvas.height)
             setCapturedImg(canvas.toDataURL('image/jpeg'))
         }
@@ -227,7 +229,7 @@ const Login = () => {
                             <h3 className='text-4xl font-bold text-center'>
                                 Sign in
                             </h3>
-                            <form onSubmit={handleSubmit} className='space-y-2' autoComplete="none">
+                            <form onSubmit={handleSubmit} className='space-y-2' autoComplete="off">
                                 <input id='reset_all' type="reset" className='hidden' />
                                 <div>
                                     <label htmlFor='email' className='px-2'>Email</label>
@@ -301,13 +303,24 @@ const Login = () => {
                                             Finish
                                         </button>
                                     </div>
-                                    <div className='flex justify-center space-x-1 text-sm opacity-70'>
-                                        <p>Not {auth.currentUser ? auth.currentUser.email : "placeholder@email.com"}?</p>
-                                        <button className='border-b opacity-70 hover:opacity-100 transition-all outline-none disabled:opacity-50' onClick={handleSignOutNotMe} disabled={pageJobDone ? true : false || loading ? true : false}>
-                                            Sign out
-                                        </button>
-                                        <p>and sign in again using your account</p>
-                                    </div>
+                                    {loading ?
+                                        <div className='flex justify-center space-x-1 text-sm opacity-70 border-b border-b-transparent'>
+                                            Loading... don't close this tab or your browser
+                                        </div>
+                                        :
+                                        pageJobDone ?
+                                            <div className='flex justify-center space-x-1 text-sm opacity-70 border-b border-b-transparent'>
+                                                Verification process finished. Click the button above to go to your dashboard
+                                            </div>
+                                            :
+                                            <div className='flex justify-center space-x-1 text-sm opacity-70'>
+                                                <p>Not {auth.currentUser ? auth.currentUser.email : "placeholder@email.com"}?</p>
+                                                <button className='border-b opacity-70 hover:opacity-100 transition-all outline-none disabled:opacity-50' onClick={handleSignOutNotMe} disabled={pageJobDone ? true : false || loading ? true : false}>
+                                                    Sign out
+                                                </button>
+                                                <p>and sign in again using your account</p>
+                                            </div>
+                                    }
                                 </div>
                             </div>
                         </div>
