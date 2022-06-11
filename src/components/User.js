@@ -17,7 +17,7 @@ const User = ({ user1, user, selectUser, chat }) => {
     }, [])
 
     return (
-        <div className={`userwrapper cursor-pointer ${chat ? chat.uid === user2 ? "bg-slate-700" : "" : ""}`} onClick={() => selectUser(user)}>
+        <div className={`userwrapper cursor-pointer ${chat ? chat.uid === user2 ? "bg-slate-700" : "hover:bg-white hover:bg-opacity-5" : "hover:bg-white hover:bg-opacity-5"} transition-all`} onClick={() => selectUser(user)}>
             <div className='px-4 py-3 border-b border-gray-700'>
                 <div className='flex items-center space-x-4'>
                     <img src={user.avatar ? user.avatar : img} className='rounded-full w-12 h-12' />
