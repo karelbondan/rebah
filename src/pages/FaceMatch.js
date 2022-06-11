@@ -132,7 +132,7 @@ const FaceMatch = () => {
     const startVideo = () => {
         let video;
         if (page.page_2) {
-            video = document.getElementsByClassName('video_capture_page_2 max-h-80 w-fit rounded-lg')[0]
+            video = document.getElementsByClassName('video_capture_page_2 max-h-72 w-fit rounded-lg')[0]
         } else {
             video = document.getElementsByClassName('video_capture_webcam max-h-72 w-fit rounded-lg')[0]
         }
@@ -160,7 +160,7 @@ const FaceMatch = () => {
         // pages. It is a logic thingy
         let video = [
             document.getElementsByClassName('video_capture_webcam max-h-72 w-fit rounded-lg')[0],
-            document.getElementsByClassName('video_capture_page_2 max-h-80 w-fit rounded-lg')[0]
+            document.getElementsByClassName('video_capture_page_2 max-h-72 w-fit rounded-lg')[0]
         ]
         /*
         try stop video in page 1 first, if fail then it means user is
@@ -221,12 +221,18 @@ const FaceMatch = () => {
         setCaptured(!captured)
         setCapturedImg("")
         if (!captured) {
-            let canvas = document.getElementsByClassName('video_capture_canvas h-72 rounded-lg')[0]
-            let canvas_page_2 = document.getElementsByClassName('video_capture_canvas_page_2 h-80 rounded-lg')[0]
-            // let vid_data = videoElem.getBoundingClientRect();
+            let canvas;
+            if (page.page_2) {
+                canvas = document.getElementsByClassName('video_capture_canvas_page_2 h-72 rounded-lg')[0]
+            } else {
+                canvas = document.getElementsByClassName('video_capture_canvas h-72 rounded-lg')[0]
+            }
+            let video = videoElem.getBoundingClientRect()
+            console.log(canvas)
+            canvas.width = video.width
+            canvas.height = video.height
             canvas.getContext('2d').drawImage(videoElem, 0, 0, canvas.width, canvas.height)
-            canvas_page_2.getContext('2d').drawImage(videoElem, 0, 0, canvas.width, canvas.height)
-            setCapturedImg(page.page_2 ? canvas_page_2.toDataURL('image/jpeg') : canvas.toDataURL('image/jpeg'))
+            setCapturedImg(canvas.toDataURL('image/jpeg'))
         }
     }
 
@@ -251,8 +257,9 @@ const FaceMatch = () => {
                 status = result.response.job.result.status
                 await doSomething(1000)
                 console.log(status)
+                // console.log(result)
             }
-            console.log(result) // DISABLE LATER
+            // console.log(result) // DISABLE LATER
             if (result.response.message === "No face detected") {
                 if (useVideo) {
                     alert("No face detected in the photo you submitted. If you haven't enabled your camera permission yet, please enable it. If you have, make sure that the camera lens is clean and your head is straight. Please look into the camera for best result too.")
@@ -471,7 +478,8 @@ const FaceMatch = () => {
                                             </button>
                                         </div>
                                         <button className='opacity-50 border-b border-b-transparent hover:opacity-100 hover:border-b-current transition-all disabled:opacity-20' disabled={loading ? true : false} onClick={handleUseVideo}>
-                                            Use camera instead
+                                            {/* {loading ? pageJobDone.page_1 ? "Please continue to the next step by clicking the button above" : "Loading... Don't close this tab or your browser" : "Use camera instead"} */}
+                                            {pageJobDone.page_1 ? "Please continue to the next step by clicking the button above" : loading ? "Loading... Don't close this tab or your browser" : "Use camera instead"}
                                         </button>
                                     </div>
                                 </div>
@@ -516,15 +524,16 @@ const FaceMatch = () => {
                                                 Next
                                             </button>
                                         </div>
-                                        <button className='opacity-50 border-b border-b-transparent hover:opacity-100 hover:border-b-current transition-all disabled:opacity-20' disabled={loading ? true : false} onClick={handleUseVideo}>
-                                            Upload a photo instead
+                                        <button className={`opacity-50 border-b border-b-transparent hover:opacity-100 hover:border-b-current transition-all ${loading ? "disabled:opacity-70" : "disabled:opacity-20"}`} disabled={loading ? true : false} onClick={handleUseVideo}>
+                                            {/* {loading ? pageJobDone.page_1 ? "Please continue to the next step by clicking the button above" : "Loading... Don't close this tab or your browser" : "Upload a photo instead"} */}
+                                            {pageJobDone.page_1 ? "Please continue to the next step by clicking the button above" : loading ? "Loading... Don't close this tab or your browser" : "Upload a photo instead"}
                                         </button>
                                     </div>
                                 </div>
                             </div>
                             {/* page 2*/}
                             <div className={`${page.page_2 ? "h-[580px] flex" : "hidden"}`}>
-                                <div className='page_1 flex flex-col items-center justify-center space-y-10'>
+                                <div className='page_1 flex flex-col items-center justify-center space-y-9'>
                                     <div className='text-center space-y-4'>
                                         <h3 className='text-4xl font-bold'>Verification test</h3>
                                         <p>
@@ -533,12 +542,12 @@ const FaceMatch = () => {
                                             Now, ready yourself, give your best smile, and press the "Capture Photo" button when you're ready.
                                         </p>
                                     </div>
-                                    <div className={`${useVideo ? "h-80 max-h-80 w-fit" : "h-80 w-[500px]"} bg-slate-600 rounded-xl flex items-center justify-center`}>
+                                    <div className={`${useVideo ? "h-72 max-h-72 w-fit" : "h-72 w-[500px]"} bg-slate-600 rounded-xl flex items-center justify-center`}>
                                         <div className={`${captured ? "hidden" : ""}`}> {/* if captured then set to hidden and stop stream */}
-                                            <video muted autoPlay className='video_capture_page_2 max-h-80 w-fit rounded-lg' />
+                                            <video muted autoPlay className='video_capture_page_2 max-h-72 w-fit rounded-lg' />
                                         </div>
                                         <div className={`${captured ? "" : "hidden"}`}> {/* if captured then set to not hidden */}
-                                            <canvas className='video_capture_canvas_page_2 rounded-lg h-80'></canvas>
+                                            <canvas className='video_capture_canvas_page_2 rounded-lg h-72'></canvas>
                                         </div>
                                     </div>
                                     <div className={`flex space-x-2 ${error ? "text-red-400" : "hidden"}`}>
@@ -564,6 +573,10 @@ const FaceMatch = () => {
                                                 Next
                                             </button>
                                         </div>
+                                        <button className={`opacity-50 border-b border-b-transparent hover:opacity-100 hover:border-b-current transition-all ${loading ? "disabled:opacity-70" : "disabled:opacity-20"}`} disabled={loading ? true : false} onClick={handleUseVideo}>
+                                            {/* {loading ? pageJobDone.page_1 ? "Please continue to the next step by clicking the button above" : "Loading... Don't close this tab or your browser" : "Upload a photo instead"} */}
+                                            {pageJobDone.page_2 ? "Please continue to the next step by clicking the button above" : loading ? "Loading... Don't close this tab or your browser" : "Cancel process"}
+                                        </button>
                                     </div>
                                 </div>
                             </div>
