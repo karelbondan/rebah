@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { db, auth, storage } from '../firebase'
-import { collection, query, where, onSnapshot, addDoc, Timestamp, orderBy, doc, setDoc, getDoc, updateDoc } from 'firebase/firestore'
+import { collection, query, where, onSnapshot, addDoc, Timestamp, orderBy, doc, setDoc, getDoc, updateDoc, getDocs } from 'firebase/firestore'
 import { ref, getDownloadURL, uploadBytes } from 'firebase/storage';
 import User from '../components/User'
 import Message from '../components/Message'
@@ -8,19 +8,27 @@ import Messages from '../components/Messages';
 import Moment from 'react-moment'
 import defimg from '../components/items/default.jpg'
 import defbg from '../components/items/bg3.jpg'
+import logo_2 from '../components/items/rebah_logo_complete_transparent.png'
 import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   // initial variables
   const [users, setUsers] = useState([])
+  const [chatUsers, setChatUsers] = useState([])
+  const [allUsers, setAllUsers] = useState([])
+  const [chatUsersCopy, setChatUsersCopy] = useState([])
+  const [allUsersCopy, setAllUsersCopy] = useState([])
+  const [chatsWith, setChatsWith] = useState([])
   const [chat, setChat] = useState("")
+  const [userChatSearch, setUserChatSearch] = useState("")
+  const [userAllSearch, setUserAllSearch] = useState("")
   const [currentChat, setCurrentChat] = useState("")
   const [text, setText] = useState("")
   const [img, setImg] = useState("")
   const [messages, setMessages] = useState([])
   const [sending, setSending] = useState(false)
   const [previousData, setPreviousData] = useState()
-  const [init, setInit] = useState()
+  const [isAddNew, setIsAddNew] = useState(false)
   const [loading, setLoading] = useState(false)
   const messagesRef = useRef(null)
   const navigate = useNavigate()
@@ -34,7 +42,7 @@ const Home = () => {
       if (verify.data().faceEnrollment && !verify.data().hasVerifiedSignIn) {
         navigate("/login")
         console.log("sjdh kjashdjk ah")
-      } 
+      }
       setLoading(false)
 
     }
@@ -71,6 +79,35 @@ const Home = () => {
     })
     return () => { unsub() }
   }, [])
+
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, 'lastMessage'), snap => {
+      let chats = []
+      snap.forEach((doc) => {
+        chats.push(doc.id)
+      })
+      setChatsWith(chats)
+    })
+    return () => { unsub() }
+  }, [users])
+
+  useEffect(() => {
+    console.log("are you called everytime i send message lmao")
+    let all_usr = [], chat_usr = []
+    users.forEach((user) => {
+      const chat_id = auth.currentUser.uid > user.uid ? `${auth.currentUser.uid + user.uid}` : `${user.uid + auth.currentUser.uid}`
+      if (chatsWith.includes(chat_id) === true) {
+        chat_usr.push(user)
+      } else {
+        all_usr.push(user)
+      }
+    })
+    setAllUsers(all_usr)
+    setAllUsersCopy(all_usr)
+    setChatUsers(chat_usr)
+    setChatUsersCopy(chat_usr)
+    setIsAddNew(false)
+  }, [chatsWith])
 
   const selectusr = async (user) => {
     // set the chat to the current selected recipient
@@ -202,6 +239,51 @@ const Home = () => {
     setSending(false)
   }
 
+  const handleSetUserList = (e, context) => {
+    e.preventDefault()
+    if (context === "all") {
+      setIsAddNew(true)
+    } else if (context === "chat") {
+      setIsAddNew(false)
+    } else {
+      alert("Something unexpected happened. Please contact the developer")
+    }
+    setUserChatSearch("")
+    setUserAllSearch("")
+  }
+
+  const handleChangeSearchChat = (e) => {
+    e.preventDefault()
+    setUserChatSearch(e.target.value)
+    if (e.target.value === "") {
+      setChatUsers(chatUsersCopy)
+    } else {
+      let filtered = []
+      chatUsersCopy.forEach((user) => {
+        if (user.username.toLowerCase().includes(e.target.value.toLowerCase()) === true) {
+          filtered.push(user)
+        }
+      })
+      setChatUsers(filtered)
+    }
+  }
+
+  const handleChangeSearchAll = (e) => {
+    e.preventDefault()
+    setUserAllSearch(e.target.value)
+    if (e.target.value === "") {
+      setAllUsers(allUsersCopy)
+    } else {
+      let filtered = []
+      allUsersCopy.forEach((user) => {
+        if (user.username.toLowerCase().includes(e.target.value.toLowerCase()) === true) {
+          filtered.push(user)
+        }
+      })
+      setAllUsers(filtered)
+    }
+  }
+
   return loading ? (
     <div className='overflow-hidden z-0'>
       <div className='z-50 flex flex-col items-center justify-center overflow-auto bg-gray-900 h-screen w-screen'>
@@ -224,8 +306,70 @@ const Home = () => {
         <div className='w-0 z-0'>
           <img src={defbg} alt="bg" className='min-h-max min-w-max opacity-40'></img>
         </div>
-        <div className='bg-gray-800 text-white w-2/6 z-50 min-w-5-6 overflow-y-scroll'>
-          {users.map(user => <User key={user.uid} user={user} selectUser={selectusr} user1={user1} chat={chat} />)}
+        <div className='bg-gray-800 text-white w-2/6 z-50 min-w-5-6 overflow-y-auto'>
+          <div className={`CHAT EXIST WITH USER CONTAINER ${isAddNew ? "hidden" : ""}`}>
+            <div className='py-2 sticky top-0 text-center bg-slate-800 border-b border-slate-600'>
+              <div className='flex justify-center my-2'>
+                <img className='text-center max-w-[150px]' src={logo_2} alt="rebah_logo" />
+              </div>
+              <div className='justify-center py-2 px-5 flex space-x-4'>
+                <form className='flex space-x-4' autoComplete='none' onSubmit={handleChangeSearchChat}>
+                  <input type="text" value={userChatSearch} onChange={handleChangeSearchChat} className='w-full rounded-xl px-3 py-2 focus:outline-none bg-gray-700 text-gray-300' placeholder='Search users' />
+                  <button className='text-gray-500' title="Search for users you've chatted with before" onClick={handleChangeSearchChat}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </button>
+                </form>
+                <button className='text-gray-500' title="Add a new user to chat with" onClick={(e) => { handleSetUserList(e, "all") }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div>
+              {/* {users.map(user => <User key={user.uid} user={user} selectUser={selectusr} user1={user1} chat={chat} />)} change to people that have chat with the current user */}
+              {chatUsers.length === 0 ?
+                <div className='flex flex-col items-center justify-center py-52 text-gray-500 text-center px-8 space-y-2'>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                  </svg>
+                  <p className='font-semibold'>
+                    Welcome to Rebah! There's no one here yet. Press the "add people to chat with" using the button above. Start a conversation with someone, and they'll appear here!
+                  </p>
+                </div>
+                :
+                chatUsers.map(user => <User key={user.uid} user={user} selectUser={selectusr} user1={user1} chat={chat} />)
+              }
+            </div>
+          </div>
+          <div className={`ALL USERS CONTAINER ${isAddNew ? "" : "hidden"}`}>
+            <div className='py-2 sticky top-0 text-center bg-slate-800 border-b border-slate-600'>
+              <div className='flex justify-center my-2'>
+                <img className='text-center max-w-[150px]' src={logo_2} alt="rebah_logo" />
+              </div>
+              <div className='justify-center py-2 px-5 flex space-x-4'>
+                <button className='text-gray-500' title='Back to chat list' onClick={(e) => { handleSetUserList(e, "chat") }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                </button>
+                <form className='flex space-x-4' autoComplete='none' onSubmit={handleChangeSearchAll}>
+                  <input type="text" value={userAllSearch} onChange={handleChangeSearchAll} className='w-full rounded-xl px-3 py-2 focus:outline-none bg-gray-700 text-gray-300' placeholder='Search users' />
+                  <button className='text-gray-500' title="Search for users" onClick={handleChangeSearchAll}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </button>
+                </form>
+              </div>
+            </div>
+            <div>
+              {/* {users.map(user => <User key={user.uid} user={user} selectUser={selectusr} user1={user1} chat={chat} />)} change to people that have chat with the current user */}
+              {allUsers.map(user => <User key={user.uid} user={user} selectUser={selectusr} user1={user1} chat={chat} />)} {/* change to people that have chat with the current user */}
+            </div>
+          </div>
         </div>
         <div className='h-screen overflow-y-hide w-full z-30'>
           {chat ?
