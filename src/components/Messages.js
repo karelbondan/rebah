@@ -27,7 +27,7 @@ const Messages = ({ message, user1 }) => {
                     setText(docsnap.data().text)
                 } catch (e) { }
             })
-        } catch (e) { console.log(e) }
+        } catch (e) { }
     }, [message])
 
     const handleChange = (e) => {
