@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { auth, db } from '../firebase'
 import { signOut, onAuthStateChanged } from 'firebase/auth'
-import { updateDoc, doc, Timestamp, getDoc } from 'firebase/firestore'
+import { updateDoc, doc, Timestamp, getDoc, onSnapshot } from 'firebase/firestore'
 import { useNavigate } from 'react-router-dom'
 import logo from '../components/items/rebah_logo_transparent.png'
 import logo_2 from '../components/items/rebah_logo_complete_transparent.png'
@@ -38,6 +38,13 @@ const Navbar = () => {
         set_user()
     }, [userExist])
 
+    useEffect(() => {
+        const updt = onSnapshot(doc(db, 'users', auth.currentUser.uid), snap => {
+            setUser(snap.data())
+        })
+        return () => {updt()}
+    }, [userExist])
+
     return (
         <nav className='flex items-center justify-between h-16 x-screen px-10 py-10 z-50 bg-slate-900 text-white'>
             <h3 className='z-50'>
@@ -50,10 +57,10 @@ const Navbar = () => {
                     <div className='space-x-2'>
                         <Link to={"/profile"}>
                             {user ? (
-                            <div className='profile_container flex items-center space-x-3 opacity-80 hover:opacity-100 transition-all'>
-                                <p className='user_name text-lg transition-all'>{user.username}</p>
-                                <img src={user.avatar ? user.avatar : img} className='user_image h-11 w-11 rounded-full transition-all' />
-                            </div>)
+                                <div className='profile_container flex items-center space-x-3 opacity-80 hover:opacity-100 transition-all'>
+                                    <p className='user_name text-lg transition-all'>{user.username}</p>
+                                    <img src={user.avatar ? user.avatar : img} className='user_image h-11 w-11 rounded-full transition-all' />
+                                </div>)
                                 :
                                 ""}
                         </Link>
