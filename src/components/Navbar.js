@@ -29,6 +29,7 @@ const Navbar = () => {
     useEffect(() => {
         const set_user = async () => {
             if (auth.currentUser) {
+                console.log(auth.currentUser.metadata)
                 const usr = await getDoc(doc(db, 'users', auth.currentUser.uid))
                 setUser(usr.data())
             } else {
