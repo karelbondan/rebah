@@ -39,10 +39,12 @@ const Navbar = () => {
     }, [userExist])
 
     useEffect(() => {
-        const updt = onSnapshot(doc(db, 'users', auth.currentUser.uid), snap => {
-            setUser(snap.data())
-        })
-        return () => {updt()}
+        try {
+            const updt = onSnapshot(doc(db, 'users', auth.currentUser.uid), snap => {
+                setUser(snap.data())
+            })
+            return () => { updt() }
+        } catch (e) { }
     }, [userExist])
 
     return (
