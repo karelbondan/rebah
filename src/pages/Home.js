@@ -224,7 +224,7 @@ const Home = () => {
         <div className='w-0 z-0'>
           <img src={defbg} alt="bg" className='min-h-max min-w-max opacity-40'></img>
         </div>
-        <div className='bg-gray-800 text-white w-2/6 z-50 min-w-5-6'>
+        <div className='bg-gray-800 text-white w-2/6 z-50 min-w-5-6 overflow-y-scroll'>
           {users.map(user => <User key={user.uid} user={user} selectUser={selectusr} user1={user1} chat={chat} />)}
         </div>
         <div className='h-screen overflow-y-hide w-full z-30'>
