@@ -269,20 +269,22 @@ const Profile = () => {
                         </div>
                         <hr className='my-4 opacity-30'></hr>
                         <div className={`text-center ${loading ? "" : "hidden"}`}>
-                            <button className='hover:opacity-100 opacity-50 transition-all' disabled={true}>
-                                <p>
-                                    Please wait
+                            {/* <button className='hover:opacity-100 opacity-50 transition-all' disabled={true}> */}
+                            <button className='px-8 py-3 rounded-full hover:bg-gray-800 bg-gray-600 transition-all focus:outline-none disabled:opacity-70' disabled={true}>
+                                <p className='text-md'>
+                                    Loading...
                                     <br />
                                     <span className='flex items-center justify-center space-x-1 text-xs'>
-                                        <span>Loading...</span>
+                                        <span>Don't close this tab or your browser</span>
                                     </span>
                                 </p>
                             </button>
                         </div>
                         <div className={`footer_container ${loading ? "hidden" : ""}`}>
                             <div className={`text-center ${useFaceMatch ? "hidden" : ""}`}> {/*set hidden if have face enrollment*/}
-                                <button className='hover:opacity-100 opacity-50 transition-all' onClick={handleFooterButtons}>
-                                    <p>
+                                {/* <button className='hover:opacity-100 opacity-50 transition-all' onClick={handleFooterButtons}> */}
+                                <button className='px-8 py-3 rounded-full hover:bg-gray-800 bg-gray-600 transition-all focus:outline-none disabled:opacity-70' onClick={handleFooterButtons}>
+                                    <p className='text-md'>
                                         Enable sign in with Face Match
                                         <br />
                                         <span className='flex items-center justify-center space-x-1 text-xs'>
@@ -292,21 +294,23 @@ const Profile = () => {
                                 </button>
                             </div>
                             <div className={`flex items-center justify-evenly text-center space-x-6 ${useFaceMatch ? "" : "hidden"}`}> {/*set hidden if not have face enrollment*/}
-                                <button className='hover:opacity-100 opacity-50 transition-all' onClick={handleFooterButtons}>
-                                    <p>
-                                        Change Face Match model
+                                {/* <button className='hover:opacity-100 opacity-50 transition-all' onClick={handleFooterButtons}> */}
+                                <button className='px-8 py-3 rounded-full hover:bg-gray-800 bg-gray-600 transition-all focus:outline-none disabled:opacity-70' onClick={handleFooterButtons}>
+                                    <p className='text-md'>
+                                        Change face match model
                                         <br />
                                         <span className='flex items-center justify-center space-x-1 text-xs'>
                                             <span>Powered by</span> <img className='height-nodeflux' src={nodeflux_white} />
                                         </span>
                                     </p>
                                 </button>
-                                <button className='hover:opacity-100 hover:text-red-500 opacity-50 transition-all grayscale hover:grayscale-0' onClick={(e) => { handleFooterButtons(e, "disable") }}>
-                                    <p>
-                                        Disable sign in with Face Match
+                                {/* <button className='hover:opacity-100 hover:text-red-500 opacity-50 transition-all grayscale hover:grayscale-0' onClick={(e) => { handleFooterButtons(e, "disable") }}> */}
+                                <button className='px-7 py-2 rounded-full hover:bg-red-800 bg-gray-600 transition-all focus:outline-none disabled:opacity-70' onClick={(e) => { handleFooterButtons(e, "disable") }}>
+                                    <p className='text-md'>
+                                        Disable verification with face
                                         <br />
                                         <span className='flex items-center justify-center space-x-1 text-xs'>
-                                            <span>Powered by</span> <img className='height-nodeflux ' src={nodeflux_white} />
+                                            <span>Powered by</span> <img className='height-nodeflux' src={nodeflux_white} />
                                         </span>
                                     </p>
                                 </button>
