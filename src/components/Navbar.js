@@ -1,26 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { auth, db } from '../firebase'
-import { signOut, onAuthStateChanged } from 'firebase/auth'
-import { updateDoc, doc, Timestamp, getDoc, onSnapshot } from 'firebase/firestore'
-import { useNavigate } from 'react-router-dom'
-import logo from '../components/items/rebah_logo_transparent.png'
+import { onAuthStateChanged } from 'firebase/auth'
+import { doc, getDoc, onSnapshot } from 'firebase/firestore'
 import logo_2 from '../components/items/rebah_logo_complete_transparent.png'
 import img from '../components/items/default.jpg'
 
 const Navbar = () => {
     const [user, setUser] = useState()
     let userExist = auth.currentUser
-    const navigate = useNavigate();
-    const handleLogout = async () => {
-        await updateDoc(doc(db, 'users', auth.currentUser.uid), {
-            isOnline: false,
-            lastSeen: Timestamp.fromDate(new Date())
-        });
-        await signOut(auth);
-        console.log('logged out');
-        navigate("/login");
-    }
 
     onAuthStateChanged(auth, () => {
         userExist = auth.currentUser
