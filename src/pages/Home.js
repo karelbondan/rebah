@@ -81,18 +81,11 @@ const Home = () => {
   }, [])
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'lastMessage'), snap => {
-      let chats = []
-      snap.forEach((doc) => {
-        chats.push(doc.id)
-      })
-      setChatsWith(chats)
-    })
-    return () => { unsub() }
-  }, [users])
+    // update the chatsWith array at the first render to update the list of current user chatting with who
+    update_chatsWith()
+  }, [])
 
   useEffect(() => {
-    console.log("are you called everytime i send message lmao")
     let all_usr = [], chat_usr = []
     users.forEach((user) => {
       const chat_id = auth.currentUser.uid > user.uid ? `${auth.currentUser.uid + user.uid}` : `${user.uid + auth.currentUser.uid}`
@@ -108,6 +101,29 @@ const Home = () => {
     setChatUsersCopy(chat_usr)
     setIsAddNew(false)
   }, [chatsWith])
+
+  // useEffect(() => {
+  //   const unsub = onSnapshot(collection(db, 'lastMessage'), snap => {
+  //     let chats = []
+  //     snap.forEach((doc) => {
+  //       chats.push(doc.id)
+  //     })
+  //     setChatsWith(chats)
+  //   })
+  //   return () => { unsub() }
+  // }, [users]) 
+
+  // ^ CHANGE TO GET COLLECION TO AVOID QUOTA LIMIT
+
+  // HERE'S THE UPDATED FUNCTION
+  const update_chatsWith = async () => {
+    const get_newest = getDocs(collection(db, 'lastMessage'))
+    let chats = []
+    get_newest.forEach((doc) => {
+      chats.push(doc.id)
+    })
+    setChatsWith(chats)
+  }
 
   const selectusr = async (user) => {
     // set the chat to the current selected recipient
@@ -237,6 +253,9 @@ const Home = () => {
     }
     // set to false to hide the 'sending' indicator
     setSending(false)
+
+    // update the chatsWith array to check if a new person has chatted
+    update_chatsWith()
   }
 
   const handleSetUserList = (e, context) => {
