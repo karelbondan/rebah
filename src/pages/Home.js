@@ -19,6 +19,7 @@ const Home = () => {
   const [chatUsersCopy, setChatUsersCopy] = useState([])
   const [allUsersCopy, setAllUsersCopy] = useState([])
   const [chatsWith, setChatsWith] = useState([])
+  const [chatsWithFullDoc, setChatsWithFullDoc] = useState([])
   const [chat, setChat] = useState("")
   const [userChatSearch, setUserChatSearch] = useState("")
   const [userAllSearch, setUserAllSearch] = useState("")
@@ -80,13 +81,15 @@ const Home = () => {
     return () => { unsub() }
   }, [])
 
-  useEffect(() => {
-    // update the chatsWith array at the first render to update the list of current user chatting with who
-    update_chatsWith()
-  }, [])
+  // useEffect(() => {
+  //   // update the chatsWith array after the users array has been set/updated
+  //   update_chatsWith()
+  // }, [users])
 
   useEffect(() => {
+    console.log("u got triggered")
     let all_usr = [], chat_usr = []
+    console.log(users)
     users.forEach((user) => {
       const chat_id = auth.currentUser.uid > user.uid ? `${auth.currentUser.uid + user.uid}` : `${user.uid + auth.currentUser.uid}`
       if (chatsWith.includes(chat_id) === true) {
@@ -95,34 +98,40 @@ const Home = () => {
         all_usr.push(user)
       }
     })
+    console.log(chat_usr)
     setAllUsers(all_usr)
     setAllUsersCopy(all_usr)
     setChatUsers(chat_usr)
     setChatUsersCopy(chat_usr)
-    setIsAddNew(false)
   }, [chatsWith])
 
-  // useEffect(() => {
-  //   const unsub = onSnapshot(collection(db, 'lastMessage'), snap => {
-  //     let chats = []
-  //     snap.forEach((doc) => {
-  //       chats.push(doc.id)
-  //     })
-  //     setChatsWith(chats)
-  //   })
-  //   return () => { unsub() }
-  // }, [users]) 
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, 'lastMessageRef'), snap => {
+      let chats = [], chats_full = []
+      snap.forEach((doc) => {
+        chats.push(doc.id)
+        chats_full.push({ id: doc.id, data: doc.data() })
+      })
+      setChatsWith(chats)
+      setChatsWithFullDoc(chats_full)
+    })
+    return () => { unsub() }
+  }, [users])
 
   // ^ CHANGE TO GET COLLECION TO AVOID QUOTA LIMIT
 
   // HERE'S THE UPDATED FUNCTION
   const update_chatsWith = async () => {
+    console.log("this prints how many times you called in a single refresh")
     const get_newest = await getDocs(collection(db, 'lastMessage'))
-    let chats = []
+    let chats = [], chats_full = []
     get_newest.forEach((doc) => {
       chats.push(doc.id)
+      chats_full.push({ id: doc.id, data: doc.data() })
     })
     setChatsWith(chats)
+    setChatsWithFullDoc(chats_full)
+    setIsAddNew(false)
   }
 
   const selectusr = async (user) => {
@@ -237,6 +246,9 @@ const Home = () => {
         unread: true,
         unreadCount: previous_data.from === user1 ? previous_data.unreadCount + 1 : 1
       })
+      await setDoc(doc(db, "lastMessageRef", id), {
+        uid: id
+      })
     } catch (e) {
       // if this is the first time the sender chats with the receiver then it won't have 'lastMessage' document,
       // therefore unreadCount just becomes 1, it doesn't matter because the one going to see it is the receiver
@@ -250,12 +262,16 @@ const Home = () => {
         unread: true,
         unreadCount: 1
       })
+      await setDoc(doc(db, "lastMessageRef", id), {
+        uid: id
+      })
     }
     // set to false to hide the 'sending' indicator
     setSending(false)
 
-    // update the chatsWith array to check if a new person has chatted
-    update_chatsWith()
+    // // update the chatsWith array to check if a new person has chatted
+    // update_chatsWith()
+    setIsAddNew(false)
   }
 
   const handleSetUserList = (e, context) => {
