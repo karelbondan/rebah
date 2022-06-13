@@ -3,6 +3,9 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
 import defbg from '../components/items/bg3.jpg'
 
+// authentication context for firebase login. for updating things real time inside the website whenever the state changes 
+// (there is/isn't a user currently logged in). a simple example is updating the navbar to show the user's profile pic when 
+// there's a logged in user.
 export const authContext = createContext()
 
 const AuthProvider = ({ children }) => {

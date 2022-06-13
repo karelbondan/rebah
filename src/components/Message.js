@@ -1,53 +1,69 @@
+/* Write message area. This is the component where the upload and send buttons reside, and also the text message field */
 import React from 'react'
 
 const Message = ({ handleSubmit, text, setText, setImg, img, sending }) => {
+    // handle image upload
     const uploadIMG = (e) => {
+        // preventing the page from reloading
         e.preventDefault()
+        // creating a new document input for the custom upload button
         let input = document.createElement('input');
         input.type = 'file';
-        input.accept = 'image/*'
+        // the allowed file type is only images for now
+        input.accept = 'image/*' 
         input.onchange = _this => {
+            // get image from uploaded file
             let files = Array.from(input.files)[0];
-            // if (files.type !== 'image/jpg' || files.type !== 'image/jpeg' || files.type !== 'image/png') {
-            //     alert("Please upload only image formatted file (JPG/PNG)")
-            //     return
-            // }
+            // regex for checking if the uploaded file is an image file
             if (/^image\/[\w]+$/.exec(files.type)) {
+                // set "img" variable to uploaded image's base64 format
                 setImg(files)
-                console.log(files)
-                console.log(files.size * 2 ** -10)
-            } else {
+            } 
+            // if regex doesn't find "image/..." in the string then alert user to upload image file type only
+            else {
                 alert("Please upload only image formatted file (JPG/PNG)")
                 return
             }
         };
+        // simulate on clicking the "upload" button
         input.click();
     }
 
+    // handle removal of image attachment 
     const removeIMG = (e) => {
         e.preventDefault()
         setImg("")
     }
 
+    // onKeyDown method on the textarea will call this function below 
     const handleEdit = (e) => {
+        // enter a new line instead of send message if user press shift + enter
         if (e.shiftKey && e.keyCode === 13) {
             return
-        } else if (e.keyCode === 13) {
+        } 
+        // if press enter key then upload the message to the database
+        else if (e.keyCode === 13) { 
             handleSubmit(e)
+            // set the textarea to the default height
             const hadeh = document.getElementById("msg_write_area")
             hadeh.style.height = "";
         }
     }
 
+    // onChange method on the textarea will call this function below
     const handleChange = (e) => {
+        // if enter is pressed then do nothing
         if (e.keyCode === 13) {
             return
-        } else {
+        } 
+        // else set the "text" variable to the value of the textarea
+        else {
             setText(e.target.value)
         }
-        const hadeh = document.getElementById("msg_write_area")
-        hadeh.style.height = "";
-        hadeh.style.height = `${Math.min(hadeh.scrollHeight, 384)}px`;
+        // set the textarea's height according to the number of lines it has
+        const hadeh = document.getElementById("msg_write_area") // get the element
+        hadeh.style.height = ""; // reset the height to nothing, doesn't change anything
+        hadeh.style.height = `${Math.min(hadeh.scrollHeight, 384)}px`; // set the height to result of this calc
     }
 
     return (

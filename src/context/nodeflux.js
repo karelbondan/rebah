@@ -16,8 +16,8 @@ export const getPhotoID = (user_id) => {
     return converted_userID
 }
 
+// nodeflux authentication API call. will be used to call any nodeflux API (construct auth key, timestamp, and token)
 export const nodefluxAuth = async () => {
-    // return await fetch("http://localhost:5000/api/nodeflux/authorization", {
     return await fetch(PROXY_SERVER + "/api/nodeflux/authorization", {
         method: "POST",
         headers: {
@@ -39,6 +39,7 @@ export const nodefluxAuth = async () => {
     }).catch(e => { console.log(e.message) })
 }
 
+// nodeflux face enrollment delete API call. will be used when user decides to remove verification with face match
 export const nodefluxDeleteEnroll = async (authorization = null) => {
     let nodeflux_auth;
     if (authorization) {
@@ -50,7 +51,6 @@ export const nodefluxDeleteEnroll = async (authorization = null) => {
         nodeflux_auth = await nodefluxAuth()
     }
     const photo_id = getPhotoID(auth.currentUser.uid)
-    // console.log(photo_id + String(typeof photo_id))
 
     return await fetch(PROXY_SERVER + '/api/nodeflux/face_enrollment_delete', {
         method: "POST",
@@ -76,6 +76,7 @@ export const nodefluxDeleteEnroll = async (authorization = null) => {
     }).catch(e => { console.log(e.message) })
 }
 
+// nodeflux face enrollment API call. will be used when user decides to use sign in with face verification
 export const nodefluxEnroll = async (authorization = null, image) => {
     let nodeflux_auth;
     // meaning it's been called before
@@ -111,6 +112,8 @@ export const nodefluxEnroll = async (authorization = null, image) => {
     }).catch(e => { console.log(e) })
 }
 
+// nodeflux face match will enrollment API call. will be used whenever a user that has sign in with face verification
+// has the feature enabled is trying to sign in to Rebah. 
 export const nodefluxMatchEnroll = async (authorization = null, capturedImg) => {
     let nodeflux_auth;
     // meaning it's been called before

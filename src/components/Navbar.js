@@ -10,14 +10,16 @@ const Navbar = () => {
     const [user, setUser] = useState()
     let userExist = auth.currentUser
 
+    // update the userExist var whenever user logs in/logs out
     onAuthStateChanged(auth, () => {
         userExist = auth.currentUser
     })
 
+    // will be triggered whenever userExist var changes
     useEffect(() => {
+        // if there's a user then set the "user" var to the current user else set it empty
         const set_user = async () => {
             if (auth.currentUser) {
-                console.log(auth.currentUser.metadata)
                 const usr = await getDoc(doc(db, 'users', auth.currentUser.uid))
                 setUser(usr.data())
             } else {
@@ -27,7 +29,9 @@ const Navbar = () => {
         set_user()
     }, [userExist])
 
+    // update the profile pic in the navbar when user changes profile pic
     useEffect(() => {
+        // will be undefined when there's no user, hence the try catch
         try {
             const updt = onSnapshot(doc(db, 'users', auth.currentUser.uid), snap => {
                 setUser(snap.data())

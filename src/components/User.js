@@ -4,15 +4,19 @@ import { onSnapshot, doc } from 'firebase/firestore'
 import { db } from '../firebase'
 
 const User = ({ user1, user, selectUser, chat }) => {
+    // store the recipient's uid into a new var
     const user2 = user.uid
+    // for storing recipient's data
     const [data, setData] = useState('')
 
+    // first time page load will trigger this hook
     useEffect(() => {
+        // set the chatID, pretty self explanatory
         const id = user1 > user2 ? `${user1 + user2}` : `${user2 + user1}`
+        // call onSnapshot method whenever the document content of this chat is altered then renew the "data" var
         let unsub = onSnapshot(doc(db, 'lastMessage', id), (document) => {
             setData(document.data())
         })
-
         return () => unsub()
     }, [])
 

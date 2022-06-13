@@ -7,12 +7,19 @@ const Messages = ({ message, user1 }) => {
     const [edit, setEdit] = useState(false);
     const [text, setText] = useState("")
 
+    // will be fired whenever the "edit" var changed, for determining whether user's currently editing the message or not
     useEffect(() => {
+        // try to get the textarea element. will return undefined first time cause it fires first before the page loads
         try {
+            // get textarea element
             const hadeh = document.getElementById("textarea")
+            // reset textarea height, won't change anything
             hadeh.style.height = "";
+            // set the height to res of calc below
             hadeh.style.height = `${Math.min(hadeh.scrollHeight, 384)}px`;
+            // autofocus the text arae so user doesn't have to click it
             hadeh.focus();
+            // set the typing cursor to the end of sentence
             hadeh.setSelectionRange(hadeh.value.length, hadeh.value.length);
         } catch (e) { }
     }, [edit])
@@ -21,52 +28,67 @@ const Messages = ({ message, user1 }) => {
         // im using try catch here because the document structure for the old messages are different
         // from the new one. this try catch below will prevent the app from crashing and displaying a blank page
         try {
+            // will be fired whenever the document content is altered (this is fired afetr editing a msg)
             onSnapshot(doc(db, 'messages', message.chatID, 'chat', message.messageID), docsnap => {
+                // first time page load will return undefined
                 try {
-                    // console.log(docsnap.data())
+                    // set the "text" var to the newly fetched message data
                     setText(docsnap.data().text)
                 } catch (e) { }
             })
         } catch (e) { }
     }, [message])
 
+    // onChange method of textarea will trigger this function
     const handleChange = (e) => {
         // preventing from entering new line
         if (e.keyCode === 13) {
             setEdit(false)
         } else {
+            // set "text" var to value of textarea
             setText(e.target.value)
+            // get textarea element
             const hadeh = document.getElementById("textarea")
+            // reset height
             hadeh.style.height = "";
+            // set height to res of calc below
             hadeh.style.height = `${Math.min(hadeh.scrollHeight, 384)}px`;
         }
     }
 
+    // changes the state from viewing message to editing current message
     const changeEditState = (e) => {
         e.preventDefault()
         setEdit(true)
     }
 
+    // onKeyDown method of textarea will trigger this function 
     const handleEdit = async (e, keycode = null) => {
-        // console.log(e.keyCode)
+        // if "esc" is pressed then reset everything to what they are before editing
         if (e.keyCode === 27 || keycode === 27) {
             setEdit(false)
             setText(message.text)
         }
+        // if shift + enter is pressed then do nothing
         else if (e.shiftKey && e.keyCode === 13) {
             return
         }
+        // if enter key is pressed then submit edit
         else if (e.keyCode === 13 || keycode === 13) {
             // update message in firebase
             setEdit(false)
+            // if text is empty then return. not a valid message
             if (text === message.text) {
                 return
             }
+            // update the document message in the db
             await updateDoc(doc(db, 'messages', message.chatID, 'chat', message.messageID), {
                 text: text,
                 edited: true
             })
+            // also update the lastMessage doc in the db (for message snippet below user name in user list)
             const last_msg = await getDoc(doc(db, 'lastMessage', message.chatID))
+            // if the edited message is the latest sent message then update the doc
             if (last_msg.data().messageRefID === message.messageID) {
                 await updateDoc(doc(db, 'lastMessage', message.chatID), {
                     text: text
@@ -75,25 +97,29 @@ const Messages = ({ message, user1 }) => {
         }
     }
 
+    // delete message handler
     const handleDelete = async (e) => {
         e.preventDefault()
         let conf_del;
+        // if shift key is pressed along with the button then bypass the confirmation to del msg
         if (e.shiftKey) {
             conf_del = true
         }
         else {
             conf_del = window.confirm("Are you sure? (Hold Shift and press the delete button at the same time to bypass this confirmation")
         }
+        // if user decides to del msg then del msg in the db 
         if (conf_del) {
+            // if the last sent message is the message to be deleted then also update the lastMessage doc to show (Message deleted)
             const prev_msg = await getDoc(doc(db, 'lastMessage', message.chatID))
             if (prev_msg.data().messageRefID === message.messageID) {
                 await updateDoc(doc(db, 'lastMessage', message.chatID), {
                     text: "(Message deleted)"
                 })
             }
+            // delete the message
             await deleteDoc(doc(db, 'messages', message.chatID, 'chat', message.messageID))
         }
-
     }
 
     return (
