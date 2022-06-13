@@ -1,70 +1,70 @@
-# Getting Started with Create React App
+# **Rebah**
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Rebah is a social messenger application that doesn't collect user information and has an integrated\
+face verification whenever user signs in. It is created using the React framework plus Tailwind CSS for\
+saving a lot of time and pain dealing with CSS.
 
-## Available Scripts
+## **Features**
 
-In the project directory, you can run:
+- A functional messenger web application
+- Send, edit, and delete messages
+- Customize your profile picture and username
+- Optional sign in with face verification - Powered by Nodeflux
 
-### `npm start`
+## **Technical Information**
+#### ***TL;DR***
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+This project was created using:
+- React Framework
+- Tailwind CSS
+- Firebase Firestore
+- NodeJS
+- ExpressJS
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### ***The* true *technical information***
 
-### `npm test`
+As mentioned in the brief description above, **this web application is made using the React framework**\
+combined with **Tailwind CSS** for the styling of the pages. Additionally, **Firebase Firestore** is used as the\
+backend database for storing messages data and images uploaded into the website. **NodeJS** and\
+**ExpressJS** is also used for the backend proxy server to connect this application to the **Nodeflux**\
+API endpoint. 
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## **Other information worth mentioning**
+The database for this project is already hosted online by default. You can also create a new Firebase Firestore\
+database by clicking [this link](https://firebase.google.com/) and making a new Firestore database (I'm not sponsored to say this by the way).\
+Additionally, [Herokuapp](https://heroku.com) is used for hosting the proxy server to bridge the connection between this app\
+and Nodeflux's service. Last but not least, [Vercel](https://vercel.com/) is used to host the frontend part of this application. 
 
-### `npm run build`
+Additionally, if you decided to clone this repo, go to the directory where you want to store the cloned repo,\
+then open your terminal and type
+```sh
+cd rebah
+```
+After cloning the repo and `cd` to the `rebah` folder, type
+```sh
+npm i or npm install
+```
+it will install all the necessary modules required for this application to run. 
+After that, you should read\
+[Tailwind's tutorial](https://tailwindcss.com/docs/guides/create-react-app) on initializing Tailwind CSS in the project. Before starting the app, you should make a new\
+[Firebase](https://firebase.google.com/) project and making a new Firestore database. There are many tutorials online on how to create one.\
+After one has been created and the config file for your app has been generated, add this following line into\
+your config file:
+```js
+databaseURL:"https://{YOUR_PROJECT_ID}.firebaseio.com",
+```
+If you want to use the default configuration of this project, you must create a new `.env` file in the root folder (`./rebah`) with
+```env
+REACT_APP_{YOUR_KEY_NAME}={YOUR_KEY_VALUE}
+```
+**for each values that are going to be stored inside the `.env` file.** The `REACT_APP_` sequence before the key\
+name is required **in order for React to be able to process the environment variable.** You should store the\
+Firebase Firestore app configuration in this file. Other than because it's the deault config for this project, it's\
+safer too.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+*If you haven't been using this approach in your projects, consider using environment variables from now on to keep your sensitive information safe.*
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Have fun using Rebah, and thanks for checking this repo out!
+<br>
+<br>
+>##### Made with ❤ by Karel Bondan & Leon Jayakusuma
