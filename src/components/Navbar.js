@@ -8,11 +8,12 @@ import img from '../components/items/default.jpg'
 
 const Navbar = () => {
     const [user, setUser] = useState()
-    let userExist = auth.currentUser
+    const [previousAuthState, setPreviousAuthState] = useState()
+    const [userExist, setUserExist] = useState()
 
     // update the userExist var whenever user logs in/logs out
     onAuthStateChanged(auth, () => {
-        userExist = auth.currentUser
+        setUserExist(auth.currentUser)
     })
 
     // will be triggered whenever userExist var changes
@@ -26,7 +27,12 @@ const Navbar = () => {
                 setUser("")
             }
         }
-        set_user()
+        console.log(userExist)
+        console.log(previousAuthState)
+        if (userExist !== previousAuthState){
+            set_user()
+        }
+        setPreviousAuthState(userExist)
     }, [userExist])
 
     // update the profile pic in the navbar when user changes profile pic
