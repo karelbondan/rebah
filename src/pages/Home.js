@@ -87,9 +87,7 @@ const Home = () => {
   // }, [users])
 
   useEffect(() => {
-    console.log("u got triggered")
     let all_usr = [], chat_usr = []
-    console.log(users)
     users.forEach((user) => {
       const chat_id = auth.currentUser.uid > user.uid ? `${auth.currentUser.uid + user.uid}` : `${user.uid + auth.currentUser.uid}`
       if (chatsWith.includes(chat_id) === true) {
@@ -98,7 +96,6 @@ const Home = () => {
         all_usr.push(user)
       }
     })
-    console.log(chat_usr)
     setAllUsers(all_usr)
     setAllUsersCopy(all_usr)
     setChatUsers(chat_usr)
@@ -117,22 +114,23 @@ const Home = () => {
     })
     return () => { unsub() }
   }, [users])
-
   // ^ CHANGE TO GET COLLECION TO AVOID QUOTA LIMIT
+  // update: only updates when a new user is chatting a new recipient now
 
   // HERE'S THE UPDATED FUNCTION
-  const update_chatsWith = async () => {
-    console.log("this prints how many times you called in a single refresh")
-    const get_newest = await getDocs(collection(db, 'lastMessage'))
-    let chats = [], chats_full = []
-    get_newest.forEach((doc) => {
-      chats.push(doc.id)
-      chats_full.push({ id: doc.id, data: doc.data() })
-    })
-    setChatsWith(chats)
-    setChatsWithFullDoc(chats_full)
-    setIsAddNew(false)
-  }
+  // update: nevermind
+  // const update_chatsWith = async () => {
+  //   console.log("this prints how many times you called in a single refresh")
+  //   const get_newest = await getDocs(collection(db, 'lastMessage'))
+  //   let chats = [], chats_full = []
+  //   get_newest.forEach((doc) => {
+  //     chats.push(doc.id)
+  //     chats_full.push({ id: doc.id, data: doc.data() })
+  //   })
+  //   setChatsWith(chats)
+  //   setChatsWithFullDoc(chats_full)
+  //   setIsAddNew(false)
+  // }
 
   const selectusr = async (user) => {
     // set the chat to the current selected recipient
