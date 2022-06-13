@@ -117,7 +117,7 @@ const Home = () => {
 
   // HERE'S THE UPDATED FUNCTION
   const update_chatsWith = async () => {
-    const get_newest = getDocs(collection(db, 'lastMessage'))
+    const get_newest = await getDocs(collection(db, 'lastMessage'))
     let chats = []
     get_newest.forEach((doc) => {
       chats.push(doc.id)
