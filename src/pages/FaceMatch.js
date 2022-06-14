@@ -88,10 +88,12 @@ const FaceMatch = () => {
         e.preventDefault()
         const confirm_abort = window.confirm("Are you sure you want to cancel the whole process? If you have passed the face enrollment process, you will be prompted to verify your face whenever you sign into Rebah next time. Proceed?")
         if (confirm_abort) {
-            try {
-                stopVideo()
-            } catch (e) {
-                // if error stopping video then just pass
+            if (videoElem) {
+                try {
+                    stopVideo()
+                } catch (e) {
+                    // if error stopping video then just pass
+                }
             }
             navigate("/profile")
         }
