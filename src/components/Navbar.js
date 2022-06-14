@@ -11,15 +11,12 @@ const Navbar = () => {
     const [previousAuthState, setPreviousAuthState] = useState()
     const [userExist, setUserExist] = useState()
 
-    // update the userExist var whenever user logs in/logs out
+    // update the userExist var and user data whenever user logs in/logs out
     onAuthStateChanged(auth, () => {
         setUserExist(auth.currentUser)
-    })
-
-    // will be triggered whenever userExist var changes
-    useEffect(() => {
         // if there's a user then set the "user" var to the current user else set it empty
         const set_user = async () => {
+            console.log("you're called")
             if (auth.currentUser) {
                 const usr = await getDoc(doc(db, 'users', auth.currentUser.uid))
                 setUser(usr.data())
@@ -27,13 +24,15 @@ const Navbar = () => {
                 setUser("")
             }
         }
-        console.log(userExist)
-        console.log(previousAuthState)
-        if (userExist !== previousAuthState){
+        // sometimes this method is called although user is not logging out/in. 
+        // therefore there is a check if the previous data is the same as the current one, 
+        // the function won't be called to save resources (prevent reaching firebase quota
+        // limit basically)
+        if (userExist !== previousAuthState) {
             set_user()
         }
         setPreviousAuthState(userExist)
-    }, [userExist])
+    })
 
     // update the profile pic in the navbar when user changes profile pic
     useEffect(() => {
@@ -44,7 +43,7 @@ const Navbar = () => {
             })
             return () => { updt() }
         } catch (e) { }
-    }, [userExist])
+    }, [])
 
     return (
         <nav className='flex items-center justify-between h-16 x-screen px-10 py-10 z-50 bg-slate-900 text-white'>
